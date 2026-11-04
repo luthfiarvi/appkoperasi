@@ -1,0 +1,127 @@
+<%
+  currentPath = '/admin/anggota';
+  isAdmin = true;
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-people"></i> Data Anggota Koperasi</h1>
+    <p>Kelola data anggota Koperasi Pegawai BKN Kanreg V Jakarta</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/anggota/tambah" class="btn-primary">
+      <i class="bi bi-person-plus-fill"></i> Tambah Anggota
+    </a>
+  </div>
+</div>
+
+<% if (locals.success) { %>
+  <div class="alert alert-success animate-in">
+    <i class="bi bi-check-circle-fill"></i> <%= success %>
+  </div>
+<% } %>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger animate-in">
+    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+  </div>
+<% } %>
+
+<!-- Filter & Search Toolbar -->
+<div class="card mb-4 animate-in">
+  <div class="card-body py-3">
+    <form action="/admin/anggota" method="GET" class="filter-form d-flex gap-2">
+      <div class="input-wrapper flex-1">
+        <i class="bi bi-search input-icon"></i>
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="Cari berdasarkan Nama, NIP, NIK, atau Unit Kerja..." 
+          value="<%= q || '' %>"
+        />
+      </div>
+      <button type="submit" class="btn-primary">
+        <i class="bi bi-search"></i> Cari
+      </button>
+      <% if (q) { %>
+        <a href="/admin/anggota" class="btn-secondary">Reset</a>
+      <% } %>
+    </form>
+  </div>
+</div>
+
+<!-- Tabel Data Anggota -->
+<div class="card animate-in">
+  <div class="card-header">
+    <h3><i class="bi bi-table"></i> Daftar Anggota Aktif (<%= anggota.length %>)</h3>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="40">No</th>
+            <th>Nama Lengkap</th>
+            <th>NIP</th>
+            <th>NIK</th>
+            <th>Unit Kerja</th>
+            <th>Gaji Bersih</th>
+            <th>No. Handphone</th>
+            <th>Alamat</th>
+            <th width="150" class="text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (anggota.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                Tidak ada data anggota<%= q ? ' yang cocok dengan pencarian' : '' %>.
+              </td>
+            </tr>
+          <% } else { %>
+            <% anggota.forEach((a, idx) => { %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td>
+                  <div class="d-flex align-center gap-2">
+                    <div class="avatar-sm"><%= a.nama.charAt(0).toUpperCase() %></div>
+                    <div>
+                      <strong><%= a.nama %></strong>
+                      <div class="text-muted" style="font-size:11px"><%= a.email %></div>
+                    </div>
+                  </div>
+                </td>
+                <td><code><%= a.nip %></code></td>
+                <td><%= a.nik || '-' %></td>
+                <td><%= a.unit_kerja || 'Kanreg V BKN' %></td>
+                <td>
+                  <span class="badge badge-info" style="font-size:11px;">
+                    Rp <%= Number(a.gaji_bersih || 6500000).toLocaleString('id-ID') %>
+                  </span>
+                </td>
+                <td><%= a.no_hp || '-' %></td>
+                <td style="max-width:180px" class="text-truncate" title="<%= a.alamat || '' %>">
+                  <%= a.alamat || '-' %>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group gap-1">
+                    <a href="/admin/anggota/edit/<%= a.id %>" class="btn-sm btn-outline-primary" title="Edit Data Anggota">
+                      <i class="bi bi-pencil-square"></i> Edit
+                    </a>
+                    <form action="/admin/anggota/hapus/<%= a.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data anggota <%= a.nama %>?');">
+                      <button type="submit" class="btn-sm btn-outline-danger" title="Hapus Anggota">
+                        <i class="bi bi-trash3"></i> Hapus
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

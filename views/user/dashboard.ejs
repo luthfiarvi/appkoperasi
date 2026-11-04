@@ -1,0 +1,211 @@
+<%
+  // Partial helper: render inside main layout
+  currentPath = '/dashboard';
+  isAdmin = false;
+%>
+
+<% if (locals.query && locals.query.success === 'pengajuan') { %>
+  <div class="alert alert-success animate-in">
+    <i class="bi bi-check-circle-fill"></i> Pengajuan pinjaman berhasil dikirim! Menunggu persetujuan admin.
+  </div>
+<% } %>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-blue animate-in">
+    <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Pinjaman Aktif</div>
+      <div class="stat-value"><%= activeLoan ? formatRp(activeLoan.nominal_pengajuan) : 'Tidak Ada' %></div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-purple animate-in" style="animation-delay:.1s">
+    <div class="stat-icon"><i class="bi bi-arrow-down-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Dana Cair</div>
+      <div class="stat-value"><%= activeLoan ? formatRp(activeLoan.nominal_cair) : '-' %></div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-amber animate-in" style="animation-delay:.2s">
+    <div class="stat-icon"><i class="bi bi-currency-exchange"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Sisa Hutang Aktif</div>
+      <div class="stat-value">
+        <% if (activeLoan) { %>
+          <%= formatRp(activeLoan.sisa_hutang_aktif) %>
+        <% } else { %>
+          Rp 0
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-green animate-in" style="animation-delay:.3s">
+    <div class="stat-icon"><i class="bi bi-list-check"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Total Pengajuan</div>
+      <div class="stat-value"><%= pengajuan.length %></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pinjaman Aktif & Jadwal Cicilan -->
+<% if (activeLoan) { %>
+<div class="card animate-in" style="animation-delay:.4s">
+  <div class="card-header">
+    <h3><i class="bi bi-calendar3"></i> Jadwal Cicilan Aktif</h3>
+    <span class="badge badge-blue">Tenor <%= activeLoan.tenor_bulan %> Bulan</span>
+  </div>
+  <div class="card-body">
+    <div class="info-row mb-3">
+      <span>Plafon Pinjaman: <strong><%= formatRp(activeLoan.nominal_pengajuan) %></strong></span>
+      <span>Dana Diterima: <strong><%= formatRp(activeLoan.nominal_cair) %></strong></span>
+      <span>Biaya Admin: <strong><%= formatRp(activeLoan.biaya_admin) %></strong></span>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Bulan ke</th>
+            <th>Periode</th>
+            <th>Pokok (Rp)</th>
+            <th>Bunga (Rp)</th>
+            <th>Total Potongan (Rp)</th>
+            <th>Sisa Pokok (Rp)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% jadwalCicilan.forEach(c => { %>
+            <tr class="<%= c.status_potong === 'SUDAH_DIPOTONG' ? 'row-paid' : '' %>">
+              <td class="text-center"><%= c.bulan_ke %></td>
+              <td><%= c.periode_tagihan %></td>
+              <td class="text-right"><%= formatRp(c.pokok_angsuran) %></td>
+              <td class="text-right"><%= formatRp(c.bunga_angsuran) %></td>
+              <td class="text-right fw-600"><%= formatRp(c.total_angsuran) %></td>
+              <td class="text-right"><%= formatRp(c.sisa_pokok) %></td>
+              <td>
+                <% if (c.status_potong === 'SUDAH_DIPOTONG') { %>
+                  <span class="badge badge-green"><i class="bi bi-check2"></i> Terpotong</span>
+                <% } else { %>
+                  <span class="badge badge-yellow"><i class="bi bi-clock"></i> Belum</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Riwayat Semua Pengajuan -->
+<div class="card animate-in" style="animation-delay:.5s">
+  <div class="card-header">
+    <h3><i class="bi bi-clock-history"></i> Riwayat Pengajuan</h3>
+    <a href="/pengajuan" class="btn-secondary btn-sm">
+      <i class="bi bi-plus-lg"></i> Ajukan Baru
+    </a>
+  </div>
+  <div class="card-body">
+    <% if (pengajuan.length === 0) { %>
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Belum ada riwayat pengajuan pinjaman.</p>
+        <a href="/pengajuan" class="btn-primary-sm">Ajukan Sekarang</a>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Nominal</th>
+              <th>Tenor</th>
+              <th>Keperluan</th>
+              <th>Status</th>
+              <th>Catatan</th>
+              <th width="100" class="text-center">Dokumen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pengajuan.forEach(p => { %>
+              <tr>
+                <td><%= new Date(p.created_at).toLocaleDateString('id-ID') %></td>
+                <td class="text-right"><%= formatRp(p.nominal_pengajuan) %></td>
+                <td class="text-center"><%= p.tenor_bulan %> bln</td>
+                <td><%= p.keperluan || '-' %></td>
+                <td>
+                  <% if (p.status === 'PENDING') { %>
+                    <span class="badge badge-yellow">⏳ Menunggu</span>
+                  <% } else if (p.status === 'APPROVED') { %>
+                    <span class="badge badge-blue">✅ Disetujui</span>
+                  <% } else if (p.status === 'LUNAS') { %>
+                    <span class="badge badge-green">🏆 Lunas</span>
+                  <% } else { %>
+                    <span class="badge badge-red">❌ Ditolak</span>
+                  <% } %>
+                </td>
+                <td><small><%= p.catatan_admin || '-' %></small></td>
+                <td class="text-center">
+                  <div class="d-flex justify-center gap-1">
+                    <% if (p.status === 'APPROVED' || p.status === 'LUNAS') { %>
+                      <a href="/pinjaman/<%= p.id %>/bukti-cair" target="_blank" class="btn-sm btn-outline-primary" title="Cetak Bukti Pencairan">
+                        <i class="bi bi-printer"></i>
+                      </a>
+                    <% } %>
+                    <% if (p.status === 'LUNAS') { %>
+                      <a href="/pinjaman/<%= p.id %>/surat-lunas" target="_blank" class="btn-sm btn-outline-success" title="Cetak Surat Keterangan Lunas (SKL)">
+                        <i class="bi bi-award-fill"></i> SKL
+                      </a>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Histori Cicilan Terbayar -->
+<% if (histori.length > 0) { %>
+<div class="card animate-in" style="animation-delay:.6s">
+  <div class="card-header">
+    <h3><i class="bi bi-receipt"></i> Histori Potongan Gaji (20 Terakhir)</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Periode</th>
+            <th>Bulan ke</th>
+            <th>Pokok (Rp)</th>
+            <th>Bunga (Rp)</th>
+            <th>Total (Rp)</th>
+            <th>Tanggal Potong</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% histori.forEach(h => { %>
+            <tr>
+              <td><%= h.periode_tagihan %></td>
+              <td class="text-center"><%= h.bulan_ke %></td>
+              <td class="text-right"><%= formatRp(h.pokok_angsuran) %></td>
+              <td class="text-right"><%= formatRp(h.bunga_angsuran) %></td>
+              <td class="text-right fw-600"><%= formatRp(h.total_angsuran) %></td>
+              <td><%= h.tanggal_potong ? new Date(h.tanggal_potong).toLocaleDateString('id-ID') : '-' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<% } %>

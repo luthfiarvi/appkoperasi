@@ -1,0 +1,309 @@
+<%
+  const _simpanan = locals.simpanan || {};
+  const _pinjaman = locals.pinjaman || {};
+  const _kas      = locals.kas || {};
+
+  const _kasSaldo = _kas.saldo !== undefined ? _kas.saldo : 0;
+  const _piutang  = _pinjaman.sisaPiutang !== undefined ? _pinjaman.sisaPiutang : 0;
+  const _laba     = _pinjaman.labaOperasional !== undefined ? _pinjaman.labaOperasional : 0;
+  const _premi    = _pinjaman.totalPremi !== undefined ? _pinjaman.totalPremi : (_pinjaman.totalAdmin || 0);
+  const _bunga    = _pinjaman.bungaPendapatan !== undefined ? _pinjaman.bungaPendapatan : 0;
+
+  var neraca = locals.neraca || {
+    aktiva: {
+      kas: _kasSaldo,
+      piutang: _piutang,
+      total: _kasSaldo + _piutang
+    },
+    pasiva: {
+      kewajiban: {
+        simpananSukarela: _simpanan.sukarela || 0,
+        total: _simpanan.sukarela || 0
+      },
+      ekuitas: {
+        simpananPokok: _simpanan.pokok || 0,
+        simpananWajib: _simpanan.wajib || 0,
+        shuBerjalan: _laba,
+        total: (_simpanan.pokok || 0) + (_simpanan.wajib || 0) + _laba
+      },
+      total: (_simpanan.sukarela || 0) + (_simpanan.pokok || 0) + (_simpanan.wajib || 0) + _laba
+    },
+    isBalance: true
+  };
+
+  var rugiLaba = locals.rugiLaba || {
+    pendapatanBunga: _bunga,
+    pendapatanPremi: _premi,
+    totalPendapatan: _bunga + _premi,
+    bebanOperasional: 0,
+    shuBersih: _bunga + _premi
+  };
+
+  var arusKas = locals.arusKas || {
+    masuk: {
+      simpanan: _simpanan.totalSetor || _simpanan.total || 0,
+      pokokAngsuran: _pinjaman.pokokTerbayar || 0,
+      bunga: _bunga,
+      premi: _premi,
+      total: _kas.masuk || 0
+    },
+    keluar: {
+      pencairanPinjaman: _pinjaman.totalPlafon || 0,
+      penarikanSukarela: _simpanan.totalTarik || 0,
+      total: _kas.keluar || 0
+    },
+    saldoKas: _kasSaldo
+  };
+%>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <style>
+    body { font-family: 'Times New Roman', serif; margin: 25px 35px; color: #111; font-size: 12px; line-height: 1.35; }
+    .kop { text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 16px; }
+    .kop h2 { margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kop h3 { margin: 2px 0; font-size: 13px; font-weight: normal; }
+    .kop p  { margin: 0; font-size: 10.5px; color: #444; }
+    .title { text-align: center; margin-bottom: 16px; }
+    .title h4 { margin: 0; font-size: 14px; text-decoration: underline; text-transform: uppercase; letter-spacing: 0.5px; }
+    .title small { font-size: 10.5px; color: #444; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    th, td { border: 1px solid #333; padding: 5px 7px; font-size: 11px; }
+    th { background: #f0f0f0; text-align: left; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .section-title { font-weight: bold; font-size: 12px; margin: 12px 0 5px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 3px; }
+    .tanda-tangan { margin-top: 30px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+    .ttd-box { width: 220px; text-align: center; }
+    .ttd-line { margin-top: 55px; border-bottom: 1px solid #000; font-weight: bold; }
+    
+    .grid-neraca {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .grid-neraca-col {
+      flex: 1;
+    }
+    
+    @media print {
+      .no-print { display: none !important; }
+      body { margin: 12mm 15mm; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print" style="margin-bottom: 15px; text-align: right;">
+    <button onclick="window.print()" style="padding: 8px 18px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">
+      🖨️ Cetak / Simpan PDF
+    </button>
+  </div>
+
+  <div class="kop">
+    <h2>Badan Kepegawaian Negara Republik Indonesia</h2>
+    <h3>Kantor Regional V Jakarta — Koperasi Pegawai</h3>
+    <p>Jl. Mayjen Sutoyo No. 12, Cililitan, Kramat Jati, Jakarta Timur &bull; Telp: (021) 8093008</p>
+  </div>
+
+  <div class="title">
+    <h4>Laporan Pertanggungjawaban Keuangan Koperasi</h4>
+    <small>Neraca Keuangan, Laporan Laba Rugi (PHU) & Arus Kas s.d. <%= dateStr %></small>
+  </div>
+
+  <!-- BAGIAN 1: NERACA KEUANGAN -->
+  <div class="section-title">1. NERACA KEUANGAN KOPERASI (BALANCE SHEET)</div>
+  <table style="margin-bottom: 14px;">
+    <thead>
+      <tr style="background: #e2e8f0;">
+        <th width="35%">AKTIVA (ASET)</th>
+        <th width="15%" class="text-right">JUMLAH (RP)</th>
+        <th width="35%">PASIVA (KEWAJIBAN & EKUITAS)</th>
+        <th width="15%" class="text-right">JUMLAH (RP)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight: bold;">I. Aset Lancar</td>
+        <td></td>
+        <td style="font-weight: bold;">I. Kewajiban Jangka Pendek</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td style="padding-left: 14px;">- Kas & Bank Koperasi</td>
+        <td class="text-right"><%= formatRp(neraca.aktiva.kas) %></td>
+        <td style="padding-left: 14px;">- Simpanan Sukarela Anggota</td>
+        <td class="text-right"><%= formatRp(neraca.pasiva.kewajiban.simpananSukarela) %></td>
+      </tr>
+      <tr>
+        <td style="padding-left: 14px;">- Piutang Pinjaman Anggota (Sisa Pokok)</td>
+        <td class="text-right"><%= formatRp(neraca.aktiva.piutang) %></td>
+        <td style="font-weight: bold;">II. Ekuitas / Modal Sendiri</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td style="padding-left: 14px;">- Simpanan Pokok Anggota</td>
+        <td class="text-right"><%= formatRp(neraca.pasiva.ekuitas.simpananPokok) %></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td style="padding-left: 14px;">- Simpanan Wajib Anggota</td>
+        <td class="text-right"><%= formatRp(neraca.pasiva.ekuitas.simpananWajib) %></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td style="padding-left: 14px;">- Sisa Hasil Usaha (SHU Berjalan)</td>
+        <td class="text-right"><%= formatRp(neraca.pasiva.ekuitas.shuBerjalan) %></td>
+      </tr>
+      <tr style="font-weight: bold; background: #f1f5f9;">
+        <td>JUMLAH TOTAL AKTIVA:</td>
+        <td class="text-right"><%= formatRp(neraca.aktiva.total) %></td>
+        <td>JUMLAH TOTAL PASIVA:</td>
+        <td class="text-right"><%= formatRp(neraca.pasiva.total) %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- BAGIAN 2: LAPORAN RUGI LABA (PHU) -->
+  <div class="section-title">2. LAPORAN RUGI LABA / PERHITUNGAN HASIL USAHA (PHU)</div>
+  <table>
+    <thead>
+      <tr style="background: #e2e8f0;">
+        <th width="40">No</th>
+        <th>Komponen Pendapatan & Beban Operasional</th>
+        <th>Keterangan</th>
+        <th class="text-right" width="160">Jumlah (Rp)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="font-weight: bold; background: #f8fafc;">
+        <td colspan="4">I. PENDAPATAN OPERASIONAL</td>
+      </tr>
+      <tr>
+        <td class="text-center">1</td>
+        <td>Pendapatan Bunga Pinjaman</td>
+        <td>Bunga sliding 2% per bulan yang telah disetor</td>
+        <td class="text-right"><%= formatRp(rugiLaba.pendapatanBunga) %></td>
+      </tr>
+      <tr>
+        <td class="text-center">2</td>
+        <td>Pendapatan Premi Pinjaman / Administrasi (1%)</td>
+        <td>Potongan di muka pada setiap pencairan pinjaman baru</td>
+        <td class="text-right"><%= formatRp(rugiLaba.pendapatanPremi) %></td>
+      </tr>
+      <tr style="font-weight: bold;">
+        <td colspan="3" class="text-right">TOTAL PENDAPATAN OPERASIONAL:</td>
+        <td class="text-right"><%= formatRp(rugiLaba.totalPendapatan) %></td>
+      </tr>
+      <tr style="font-weight: bold; background: #f8fafc;">
+        <td colspan="4">II. BEBAN OPERASIONAL</td>
+      </tr>
+      <tr>
+        <td class="text-center">1</td>
+        <td>Beban Operasional & Administrasi Kantor</td>
+        <td>Kebutuhan operasional ATK & kegiatan rapat</td>
+        <td class="text-right"><%= formatRp(rugiLaba.bebanOperasional) %></td>
+      </tr>
+      <tr style="font-weight: bold;">
+        <td colspan="3" class="text-right">TOTAL BEBAN OPERASIONAL:</td>
+        <td class="text-right"><%= formatRp(rugiLaba.bebanOperasional) %></td>
+      </tr>
+      <tr style="font-weight: bold; background: #e2e8f0; font-size: 11.5px;">
+        <td colspan="3" class="text-right">SISA HASIL USAHA (SHU BERSIH TAHUN BERJALAN):</td>
+        <td class="text-right"><%= formatRp(rugiLaba.shuBersih) %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- BAGIAN 3: LAPORAN ARUS KAS -->
+  <div class="section-title">3. LAPORAN ARUS KAS KOPERASI (CASH FLOW)</div>
+  <table>
+    <thead>
+      <tr style="background: #e2e8f0;">
+        <th width="40">No</th>
+        <th>Arus Transaksi Kas Masuk & Keluar</th>
+        <th>Kategori</th>
+        <th class="text-right" width="160">Jumlah (Rp)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="font-weight: bold; background: #f8fafc;">
+        <td colspan="4">A. ARUS KAS MASUK (PENERIMAAN)</td>
+      </tr>
+      <tr>
+        <td class="text-center">1</td>
+        <td>Penerimaan Setoran Simpanan Anggota</td>
+        <td>Simpanan Pokok, Wajib & Sukarela</td>
+        <td class="text-right"><%= formatRp(arusKas.masuk.simpanan) %></td>
+      </tr>
+      <tr>
+        <td class="text-center">2</td>
+        <td>Penerimaan Angsuran Pokok Pinjaman</td>
+        <td>Realisasi cicilan pokok via payroll</td>
+        <td class="text-right"><%= formatRp(arusKas.masuk.pokokAngsuran) %></td>
+      </tr>
+      <tr>
+        <td class="text-center">3</td>
+        <td>Penerimaan Bunga Pinjaman</td>
+        <td>Pendapatan bunga angsuran</td>
+        <td class="text-right"><%= formatRp(arusKas.masuk.bunga) %></td>
+      </tr>
+      <tr>
+        <td class="text-center">4</td>
+        <td>Penerimaan Premi Pinjaman (1%)</td>
+        <td>Potongan di muka saat pencairan dana</td>
+        <td class="text-right"><%= formatRp(arusKas.masuk.premi) %></td>
+      </tr>
+      <tr style="font-weight: bold;">
+        <td colspan="3" class="text-right">TOTAL ARUS KAS MASUK:</td>
+        <td class="text-right"><%= formatRp(arusKas.masuk.total) %></td>
+      </tr>
+      <tr style="font-weight: bold; background: #f8fafc;">
+        <td colspan="4">B. ARUS KAS KELUAR (PENGELUARAN)</td>
+      </tr>
+      <tr>
+        <td class="text-center">1</td>
+        <td>Penyaluran Pembiayaan Pinjaman</td>
+        <td>Plafon pinjaman dicairkan ke anggota</td>
+        <td class="text-right"><%= formatRp(arusKas.keluar.pencairanPinjaman) %></td>
+      </tr>
+      <tr>
+        <td class="text-center">2</td>
+        <td>Penarikan Simpanan Sukarela</td>
+        <td>Pengembalian simpanan sukarela anggota</td>
+        <td class="text-right"><%= formatRp(arusKas.keluar.penarikanSukarela) %></td>
+      </tr>
+      <tr style="font-weight: bold;">
+        <td colspan="3" class="text-right">TOTAL ARUS KAS KELUAR:</td>
+        <td class="text-right"><%= formatRp(arusKas.keluar.total) %></td>
+      </tr>
+      <tr style="font-weight: bold; background: #e2e8f0; font-size: 11.5px;">
+        <td colspan="3" class="text-right">SALDO AKHIR KAS BERJALAN TERSISA:</td>
+        <td class="text-right"><%= formatRp(arusKas.saldoKas) %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- LEMBAR TANDA TANGAN -->
+  <div class="tanda-tangan">
+    <div class="ttd-box">
+      <p>Mengetahui,<br/><strong>Ketua Koperasi Pegawai BKN</strong></p>
+      <div class="ttd-line">( ............................................ )</div>
+      <small>NIP. ........................................</small>
+    </div>
+    <div class="ttd-box">
+      <p>Jakarta, <%= dateStr %><br/><strong>Bendahara Koperasi</strong></p>
+      <div class="ttd-line">( ............................................ )</div>
+      <small>NIP. ........................................</small>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,207 @@
+<%
+  currentPath = '/admin/pinjaman';
+  isAdmin = true;
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-cash-coin"></i> Data Pinjaman Anggota</h1>
+    <p>Kelola pinjaman anggota, suku bunga, tenor cicilan, perhitungan angsuran otomatis, dan sisa saldo hutang</p>
+  </div>
+  <div class="page-header-actions d-flex gap-2">
+    <a href="/admin/pinjaman/baru" class="btn-primary">
+      <i class="bi bi-plus-circle-fill"></i> Input Pinjaman Baru
+    </a>
+    <a href="/admin/laporan" class="btn-secondary">
+      <i class="bi bi-bar-chart-line-fill"></i> Laporan Keuangan
+    </a>
+  </div>
+</div>
+
+<% if (locals.success) { %>
+  <div class="alert alert-success animate-in">
+    <i class="bi bi-check-circle-fill"></i> <%= success %>
+  </div>
+<% } %>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger animate-in">
+    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+  </div>
+<% } %>
+
+<!-- Stats Grid -->
+<div class="stats-grid mb-4 animate-in">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #60a5fa;">
+      <i class="bi bi-file-earmark-text"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Total Pinjaman Disalurkan</div>
+      <div class="stat-value" style="color: #60a5fa;"><%= formatRp(totalPlafon) %></div>
+      <div class="stat-desc">Akumulasi seluruh pinjaman disetujui</div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-highlight">
+    <div class="stat-icon" style="background: rgba(239,68,68,0.15); color: #f87171;">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">e. Sisa Hutang Otomatis</div>
+      <div class="stat-value" style="color: #f87171;"><%= formatRp(totalSisaHutang) %></div>
+      <div class="stat-desc">Outstanding pokok berjalan (belum lunas)</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(16,185,129,0.15); color: #34d399;">
+      <i class="bi bi-percent"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Skema Suku Bunga</div>
+      <div class="stat-value" style="color: #34d399;">2.0% / Bulan</div>
+      <div class="stat-desc">Bunga menurun (sliding rate)</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(139,92,246,0.15); color: #a78bfa;">
+      <i class="bi bi-pie-chart"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Laporan Keuangan</div>
+      <div class="stat-value" style="font-size: 16px; margin-top: 4px;">
+        <a href="/admin/laporan" style="color:#a78bfa; text-decoration: underline;">Buka Laporan &rarr;</a>
+      </div>
+      <div class="stat-desc">Rekap simpanan, pinjaman, laba & kas</div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Bar -->
+<div class="card mb-4 animate-in">
+  <div class="card-body py-3">
+    <form action="/admin/pinjaman" method="GET" class="filter-form d-flex gap-2">
+      <div class="input-wrapper flex-1">
+        <i class="bi bi-search input-icon"></i>
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="Cari berdasarkan Nama Anggota, NIP, NIK, atau No Pinjaman..." 
+          value="<%= q || '' %>"
+        />
+      </div>
+      <button type="submit" class="btn-primary">
+        <i class="bi bi-search"></i> Cari
+      </button>
+      <% if (q) { %>
+        <a href="/admin/pinjaman" class="btn-secondary">Reset</a>
+      <% } %>
+    </form>
+  </div>
+</div>
+
+<!-- Tabel Data Pinjaman -->
+<div class="card animate-in">
+  <div class="card-header">
+    <h3><i class="bi bi-table"></i> Daftar Seluruh Pinjaman Anggota (<%= pinjamanList.length %>)</h3>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="40">No</th>
+            <th>Peminjam (Anggota)</th>
+            <th>Unit Kerja</th>
+            <th class="text-right">a. Plafon Pinjaman</th>
+            <th class="text-center">Bunga & Tenor</th>
+            <th class="text-right">b. Angsuran Otomatis</th>
+            <th class="text-right">e. Sisa Hutang</th>
+            <th class="text-center">Status</th>
+            <th width="140" class="text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (pinjamanList.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-cash-stack" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                Tidak ada data pinjaman.
+              </td>
+            </tr>
+          <% } else { %>
+            <% pinjamanList.forEach((p, idx) => { 
+                const plafon = parseFloat(p.nominal_pengajuan);
+                const tenor = parseInt(p.tenor_bulan);
+                const pokokAngsuran = plafon / tenor;
+                const bungaBln1 = (parseFloat(p.suku_bunga_persen) / 100) * plafon;
+                const totalAngsuranBln1 = pokokAngsuran + bungaBln1;
+            %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td>
+                  <div class="d-flex align-center gap-2">
+                    <div class="avatar-sm"><%= p.nama.charAt(0).toUpperCase() %></div>
+                    <div>
+                      <strong><%= p.nama %></strong>
+                      <div class="text-muted" style="font-size:11px">NIP: <%= p.nip %></div>
+                    </div>
+                  </div>
+                </td>
+                <td><%= p.unit_kerja || 'Kanreg V BKN' %></td>
+                <td class="text-right font-mono font-bold" style="color:#93c5fd;">
+                  <%= formatRp(p.nominal_pengajuan) %>
+                </td>
+                <td class="text-center">
+                  <span class="badge badge-info"><%= p.suku_bunga_persen %>% / bln</span>
+                  <div style="font-size:12px;margin-top:2px;font-weight:600;"><%= p.tenor_bulan %> Bulan</div>
+                </td>
+                <td class="text-right">
+                  <div class="font-mono font-bold" style="color:#6ee7b7;"><%= formatRp(totalAngsuranBln1) %></div>
+                  <div class="text-muted" style="font-size:10px;">(Pokok: <%= formatRp(pokokAngsuran) %>)</div>
+                </td>
+                <td class="text-right font-mono font-bold" style="color:#f87171;">
+                  <% if (p.status === 'LUNAS') { %>
+                    <span class="badge badge-success"><i class="bi bi-check-circle"></i> LUNAS (Rp 0)</span>
+                  <% } else if (p.status === 'REJECTED') { %>
+                    <span class="text-muted">-</span>
+                  <% } else { %>
+                    <%= formatRp(p.sisa_hutang) %>
+                    <div class="text-muted" style="font-size:10px;">Terbayar: <%= p.cicilan_terbayar_count || 0 %> / <%= p.tenor_bulan %> bln</div>
+                  <% } %>
+                </td>
+                <td class="text-center">
+                  <% if (p.status === 'APPROVED') { %>
+                    <span class="badge badge-success">AKTIF</span>
+                  <% } else if (p.status === 'LUNAS') { %>
+                    <span class="badge badge-info">LUNAS</span>
+                  <% } else if (p.status === 'PENDING') { %>
+                    <span class="badge badge-warning">PENDING</span>
+                  <% } else { %>
+                    <span class="badge badge-danger">DITOLAK</span>
+                  <% } %>
+                </td>
+                <td class="text-center">
+                  <div class="btn-group gap-1">
+                    <a href="/admin/pengajuan/<%= p.id %>" class="btn-sm btn-outline-primary" title="Lihat Jadwal Cicilan">
+                      <i class="bi bi-eye"></i> Jadwal
+                    </a>
+                    <!-- Tombol Hapus Pinjaman -->
+                    <form action="/admin/pinjaman/hapus/<%= p.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin MENGHAPUS data pinjaman #<%= p.id %> milik <%= p.nama %>? Seluruh jadwal cicilan terkait akan ikut terhapus.');">
+                      <button type="submit" class="btn-sm btn-outline-danger" title="Hapus Pinjaman">
+                        <i class="bi bi-trash"></i> Hapus
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,151 @@
+<%
+  currentPath = '/admin/audit-logs';
+  isAdmin = true;
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-shield-check"></i> Audit Log & Backup Database</h1>
+    <p>Rekam jejak seluruh aktivitas pengurus serta perlindungan data sistem simpan pinjam</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/backup/download" class="btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+      <i class="bi bi-cloud-arrow-down-fill"></i> Download Backup Database (.json)
+    </a>
+  </div>
+</div>
+
+<!-- Kartu Ringkasan Database & Backup Sekali Klik -->
+<div class="card animate-in mb-4" style="background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9)); border: 1px solid rgba(59,130,246,0.3);">
+  <div class="card-body">
+    <div class="d-flex justify-between align-center flex-wrap gap-3">
+      <div>
+        <h3 style="color:#93c5fd; font-size:16px; margin-bottom:4px;">
+          <i class="bi bi-database-fill-check text-primary"></i> Status Database & Pemulihan Cepat (Disaster Recovery)
+        </h3>
+        <p class="text-muted" style="font-size:13px; margin:0;">
+          Unduh salinan lengkap seluruh tabel: Anggota, Simpanan, Pinjaman, dan Jejak Audit dalam satu file JSON berstempel waktu.
+        </p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="badge badge-info" style="font-size:12px; padding:8px 12px;">
+          <i class="bi bi-people"></i> <%= dbSummary.totalAnggota %> Anggota
+        </span>
+        <span class="badge badge-success" style="font-size:12px; padding:8px 12px;">
+          <i class="bi bi-wallet2"></i> <%= dbSummary.totalSimpanan %> Simpanan
+        </span>
+        <span class="badge badge-warning" style="font-size:12px; padding:8px 12px;">
+          <i class="bi bi-cash-stack"></i> <%= dbSummary.totalPinjaman %> Pinjaman
+        </span>
+        <span class="badge badge-secondary" style="font-size:12px; padding:8px 12px;">
+          <i class="bi bi-clock-history"></i> <%= dbSummary.totalCicilan %> Cicilan
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Pencarian Log -->
+<div class="card animate-in mb-4">
+  <div class="card-body">
+    <form action="/admin/audit-logs" method="GET" class="d-flex gap-3 align-center flex-wrap">
+      <div class="input-wrapper flex-1" style="min-width:240px;">
+        <i class="bi bi-search input-icon"></i>
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="Cari nama admin, rincian aktivitas, atau IP address..." 
+          value="<%= q %>"
+        />
+      </div>
+
+      <div style="min-width:180px;">
+        <select name="action" class="form-control" onchange="this.form.submit()">
+          <option value="">-- Semua Aksi --</option>
+          <% actionList.forEach(act => { %>
+            <option value="<%= act %>" <%= act === actionFilter ? 'selected' : '' %>><%= act %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-primary" style="white-space:nowrap;">
+        <i class="bi bi-filter"></i> Filter
+      </button>
+
+      <% if (q || actionFilter) { %>
+        <a href="/admin/audit-logs" class="btn-secondary">Reset</a>
+      <% } %>
+    </form>
+  </div>
+</div>
+
+<!-- Tabel Jejak Audit -->
+<div class="card animate-in">
+  <div class="card-header d-flex justify-between align-center">
+    <h3><i class="bi bi-clock-history"></i> Riwayat Aktivitas Terbaru (<%= logs.length %> Catatan)</h3>
+    <span class="badge badge-info">100 Log Terakhir</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="150">Waktu</th>
+            <th>Pengguna</th>
+            <th>Aksi</th>
+            <th>Target</th>
+            <th>Rincian Aktivitas</th>
+            <th width="110">IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (logs.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                Belum ada rekam jejak aktivitas yang sesuai.
+              </td>
+            </tr>
+          <% } else { %>
+            <% logs.forEach(log => { %>
+              <%
+                let badgeClass = 'badge-secondary';
+                if (log.action.includes('ADD') || log.action.includes('SETOR')) badgeClass = 'badge-success';
+                else if (log.action.includes('UPDATE') || log.action.includes('EDIT')) badgeClass = 'badge-info';
+                else if (log.action.includes('DELETE') || log.action.includes('REJECT')) badgeClass = 'badge-danger';
+                else if (log.action.includes('APPROVE') || log.action.includes('LUNAS')) badgeClass = 'badge-primary';
+                else if (log.action.includes('BACKUP')) badgeClass = 'badge-warning';
+              %>
+              <tr>
+                <td style="font-size:12px; white-space:nowrap; color:#94a3b8;">
+                  <%= new Date(log.created_at).toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) %>
+                  <div style="font-family:monospace; color:#64748b;"><%= new Date(log.created_at).toLocaleTimeString('id-ID') %></div>
+                </td>
+                <td>
+                  <strong><%= log.user_nama %></strong>
+                  <div class="text-muted" style="font-size:11px;"><%= log.user_role === 'admin' ? '🛡️ Admin' : (log.user_role === 'system' ? '⚙️ Sistem' : '👤 Pegawai') %></div>
+                </td>
+                <td>
+                  <span class="badge <%= badgeClass %>" style="font-size:11px;"><%= log.action %></span>
+                </td>
+                <td>
+                  <code style="font-size:11.5px;"><%= log.target_type || '-' %></code>
+                  <% if (log.target_id) { %>
+                    <small class="text-muted">#<%= log.target_id %></small>
+                  <% } %>
+                </td>
+                <td style="font-size:13px; max-width:320px;">
+                  <%= log.details %>
+                </td>
+                <td style="font-size:11.5px; font-family:monospace; color:#94a3b8;">
+                  <%= log.ip_address || '127.0.0.1' %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

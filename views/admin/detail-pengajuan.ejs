@@ -1,0 +1,369 @@
+<%
+  currentPath = '/admin/pengajuan';
+  isAdmin = true;
+  const fmtRp = (v) => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(v||0);
+%>
+
+<% if (req.query.success === 'approved') { %>
+  <div class="alert alert-success animate-in"><i class="bi bi-check-circle-fill"></i> Pengajuan berhasil disetujui dan jadwal cicilan telah dibuat.</div>
+<% } else if (req.query.success === 'rejected') { %>
+  <div class="alert alert-warning animate-in"><i class="bi bi-info-circle-fill"></i> Pengajuan telah ditolak.</div>
+<% } else if (req.query.success === 'pelunasan_cepat') { %>
+  <div class="alert alert-success animate-in"><i class="bi bi-award-fill"></i> Pelunasan Dipercepat berhasil diproses! Pinjaman kini berstatus LUNAS dan Surat Keterangan Lunas siap dicetak.</div>
+<% } else if (req.query.error) { %>
+  <div class="alert alert-danger animate-in"><i class="bi bi-x-circle-fill"></i> Terjadi kesalahan: <%= req.query.error %></div>
+<% } %>
+
+<div class="page-header animate-in">
+  <div>
+    <h1><i class="bi bi-file-earmark-person"></i> Detail Pinjaman #<%= pinjaman.id %></h1>
+    <p>Diajukan oleh <strong><%= pinjaman.nama %></strong> pada <%= new Date(pinjaman.created_at).toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) %></p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <% if (pinjaman.status === 'APPROVED' || pinjaman.status === 'LUNAS') { %>
+      <a href="/admin/pinjaman/<%= pinjaman.id %>/bukti-cair" target="_blank" class="btn-secondary">
+        <i class="bi bi-printer"></i> Bukti Pencairan
+      </a>
+    <% } %>
+
+    <% if (pinjaman.status === 'APPROVED') { %>
+      <button type="button" class="btn-warning" onclick="document.getElementById('modalPelunasan').style.display = 'flex'">
+        <i class="bi bi-lightning-charge-fill"></i> Pelunasan Dipercepat
+      </button>
+    <% } %>
+
+    <% if (pinjaman.status === 'LUNAS') { %>
+      <a href="/admin/pinjaman/<%= pinjaman.id %>/surat-lunas" target="_blank" class="btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+        <i class="bi bi-award-fill"></i> Cetak Surat Lunas (SKL)
+      </a>
+    <% } %>
+
+    <a href="/admin/pengajuan" class="btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+  </div>
+</div>
+
+<!-- Info Peminjam & Analisis DSR -->
+<% if (pinjaman.is_topup) { %>
+<div class="card animate-in mb-3" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35);">
+  <div class="card-header d-flex justify-between align-center" style="background: rgba(245, 158, 11, 0.15);">
+    <h4 style="color: #fbbf24; margin: 0; font-size: 14px;">
+      <i class="bi bi-arrow-repeat"></i> PENGAJUAN TOP-UP PINJAMAN
+    </h4>
+    <span class="badge badge-warning">Melunasi Pinjaman #<%= pinjaman.topup_pinjaman_id %></span>
+  </div>
+  <div class="card-body">
+    <div class="d-flex justify-between flex-wrap gap-3">
+      <div>
+        <div class="text-muted" style="font-size:12px;">Sisa Pokok Pinjaman Lama Dilunasi:</div>
+        <div class="font-mono text-warning" style="font-size:18px; font-weight:700;"><%= fmtRp(pinjaman.pelunasan_pinjaman_lama) %></div>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:12px;">Plafon Pinjaman Baru:</div>
+        <div class="font-mono text-blue" style="font-size:18px; font-weight:700;"><%= fmtRp(pinjaman.nominal_pengajuan) %></div>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:12px;">Premi / Admin (1% fix):</div>
+        <div class="font-mono text-danger" style="font-size:18px; font-weight:700;"><%= fmtRp(pinjaman.nominal_pengajuan * 0.01) %></div>
+      </div>
+      <div>
+        <div class="text-muted" style="font-size:12px;">Estimasi Bersih Diterima Anggota:</div>
+        <div class="font-mono text-green" style="font-size:18px; font-weight:800;"><%= fmtRp(pinjaman.nominal_pengajuan - (pinjaman.nominal_pengajuan * 0.01) - pinjaman.pelunasan_pinjaman_lama) %></div>
+      </div>
+    </div>
+    <small class="text-muted" style="display:block; margin-top:10px; font-size:11.5px;">
+      <i class="bi bi-check2-circle text-green"></i> Saat pengajuan ini disetujui, pinjaman lama (#<%= pinjaman.topup_pinjaman_id %>) akan otomatis berstatus <strong>LUNAS</strong> dan jadwal cicilan lama akan ditutup.
+    </small>
+  </div>
+</div>
+<% } %>
+
+<div class="card animate-in" style="animation-delay:.1s">
+  <div class="card-header d-flex justify-between align-center">
+    <h3><i class="bi bi-person-badge"></i> Informasi Peminjam & Analisis Kemampuan Bayar (DSR)</h3>
+    <% if (pinjaman.status === 'PENDING') { %>
+      <span class="badge badge-yellow">⏳ Menunggu Review</span>
+    <% } else if (pinjaman.status === 'APPROVED') { %>
+      <span class="badge badge-blue">✅ Disetujui (Aktif)</span>
+    <% } else if (pinjaman.status === 'LUNAS') { %>
+      <span class="badge badge-green">🏆 Lunas</span>
+    <% } else { %>
+      <span class="badge badge-red">❌ Ditolak</span>
+    <% } %>
+  </div>
+  <div class="card-body">
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Nama</span><span class="info-value"><%= pinjaman.nama %></span></div>
+      <div class="info-item"><span class="info-label">NIP</span><span class="info-value"><code><%= pinjaman.nip %></code></span></div>
+      <div class="info-item"><span class="info-label">Unit Kerja</span><span class="info-value"><%= pinjaman.unit_kerja || 'Kanreg V BKN' %></span></div>
+      <div class="info-item"><span class="info-label">Jabatan</span><span class="info-value"><%= pinjaman.jabatan || 'Pegawai' %></span></div>
+      <div class="info-item">
+        <span class="info-label">Gaji Bersih / Take Home Pay</span>
+        <span class="info-value text-blue fw-700"><%= fmtRp(gajiBersih) %> / bln</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Rasio Angsuran (DSR)</span>
+        <span class="info-value">
+          <% if (dsrPersen <= 40) { %>
+            <span class="badge badge-success" style="font-size:12px;">
+              <i class="bi bi-check-circle"></i> <%= dsrPersen %>% &mdash; AMAN (&le; 40%)
+            </span>
+          <% } else if (dsrPersen <= 50) { %>
+            <span class="badge badge-warning" style="font-size:12px;">
+              <i class="bi bi-exclamation-triangle"></i> <%= dsrPersen %>% &mdash; PERHATIAN (40-50%)
+            </span>
+          <% } else { %>
+            <span class="badge badge-danger" style="font-size:12px;">
+              <i class="bi bi-x-octagon"></i> <%= dsrPersen %>% &mdash; RISIKO TINGGI (&gt; 50% Gaji)
+            </span>
+          <% } %>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pelunasan Dipercepat -->
+<% if (pinjaman.status === 'APPROVED') { %>
+<div id="modalPelunasan" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:16px;">
+  <div class="card animate-in" style="width:100%; max-width:540px; margin:0; border:1px solid rgba(245,158,11,0.4); box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+    <div class="card-header d-flex justify-between align-center" style="background:rgba(245,158,11,0.1);">
+      <h3 style="color:#fbbf24;"><i class="bi bi-lightning-charge-fill"></i> Pelunasan Dipercepat (Early Settlement)</h3>
+      <button type="button" class="btn-close" onclick="document.getElementById('modalPelunasan').style.display = 'none'" style="background:none; border:none; color:#cbd5e1; font-size:20px; cursor:pointer;">&times;</button>
+    </div>
+    <div class="card-body">
+      <p class="text-muted" style="font-size:13px; margin-bottom:16px;">
+        Anggota melunasi sisa seluruh pokok pinjaman sebelum jatuh tempo tenor. <strong>Bunga masa depan otomatis dihapuskan/dihemat</strong> sesuai prinsip suku bunga menurun (sliding rate).
+      </p>
+
+      <div class="p-3 rounded mb-3" style="background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.08);">
+        <div class="d-flex justify-between py-1" style="font-size:13.5px;">
+          <span class="text-muted">Sisa Pokok yang Wajib Dilunasi:</span>
+          <strong class="font-mono text-warning" style="font-size:16px;"><%= fmtRp(earlySettlementInfo.sisaPokok) %></strong>
+        </div>
+        <div class="d-flex justify-between py-1" style="font-size:13px; color:#34d399;">
+          <span>Potongan/Bunga Dihemat Anggota:</span>
+          <strong class="font-mono">( - ) <%= fmtRp(earlySettlementInfo.bungaHemat) %></strong>
+        </div>
+        <div class="d-flex justify-between py-1 border-top mt-2 pt-2" style="font-size:14px;">
+          <span>Sisa Periode Tenor:</span>
+          <strong><%= earlySettlementInfo.sisaBulan %> Bulan</strong>
+        </div>
+        <div class="d-flex justify-between py-2 border-top mt-2 pt-2" style="font-size:15px; font-weight:800;">
+          <span style="color:#60a5fa;">Total Bayar Pelunasan:</span>
+          <span style="color:#34d399;" class="font-mono"><%= fmtRp(earlySettlementInfo.sisaPokok) %></span>
+        </div>
+      </div>
+
+      <form action="/admin/pinjaman/<%= pinjaman.id %>/pelunasan-cepat" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memproses Pelunasan Dipercepat untuk pinjaman ini? Pinjaman akan dinyatakan LUNAS dan cicilan masa depan akan ditutup.')">
+        <div class="d-flex justify-end gap-2 mt-4">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('modalPelunasan').style.display = 'none'">Batal</button>
+          <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); border:none;">
+            <i class="bi bi-check2-circle"></i> Proses Pelunasan Sekarang
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Detail Pinjaman -->
+<div class="card animate-in" style="animation-delay:.2s">
+  <div class="card-header">
+    <h3><i class="bi bi-wallet2"></i> Detail Permohonan</h3>
+  </div>
+  <div class="card-body">
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Nominal Pengajuan</span><span class="info-value text-blue fw-700"><%= fmtRp(pinjaman.nominal_pengajuan) %></span></div>
+      <div class="info-item"><span class="info-label">Tenor</span><span class="info-value"><%= pinjaman.tenor_bulan %> Bulan</span></div>
+      <div class="info-item"><span class="info-label">Suku Bunga</span><span class="info-value"><%= pinjaman.suku_bunga_persen %>% / bulan (Sliding Rate)</span></div>
+      <div class="info-item"><span class="info-label">Keperluan</span><span class="info-value"><%= pinjaman.keperluan || '-' %></span></div>
+      <% if (pinjaman.status !== 'PENDING') { %>
+        <div class="info-item"><span class="info-label">Premi / Biaya Admin</span><span class="info-value"><%= fmtRp(pinjaman.biaya_admin) %></span></div>
+        <div class="info-item"><span class="info-label">Dana Cair</span><span class="info-value text-green fw-700"><%= fmtRp(pinjaman.nominal_cair) %></span></div>
+        <div class="info-item"><span class="info-label">Catatan Admin</span><span class="info-value"><%= pinjaman.catatan_admin || '-' %></span></div>
+        <div class="info-item"><span class="info-label">Tanggal Persetujuan</span><span class="info-value"><%= pinjaman.tanggal_persetujuan ? new Date(pinjaman.tanggal_persetujuan).toLocaleDateString('id-ID') : '-' %></span></div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<!-- Simulasi Angsuran -->
+<div class="card animate-in" style="animation-delay:.3s">
+  <div class="card-header">
+    <h3><i class="bi bi-table"></i> Simulasi Jadwal Angsuran</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>Bln ke</th>
+            <th>Pokok (Rp)</th>
+            <th>Bunga (Rp)</th>
+            <th>Total Potongan (Rp)</th>
+            <th>Sisa Pokok (Rp)</th>
+            <% if (jadwal.length > 0) { %><th>Periode</th><th>Status</th><% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% (jadwal.length > 0 ? jadwal : simulasi).forEach((row) => { %>
+            <tr class="<%= row.status_potong === 'SUDAH_DIPOTONG' ? 'row-paid' : '' %>">
+              <td class="text-center"><%= row.bulan_ke %></td>
+              <td class="text-right"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.pokok_angsuran) %></td>
+              <td class="text-right"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.bunga_angsuran) %></td>
+              <td class="text-right fw-600"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.total_angsuran) %></td>
+              <td class="text-right"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.sisa_pokok) %></td>
+              <% if (jadwal.length > 0) { %>
+                <td><%= row.periode_tagihan %></td>
+                <td>
+                  <% if (row.status_potong === 'SUDAH_DIPOTONG') { %>
+                    <span class="badge badge-green"><i class="bi bi-check2"></i> Terpotong</span>
+                  <% } else { %>
+                    <span class="badge badge-yellow"><i class="bi bi-clock"></i> Belum</span>
+                  <% } %>
+                </td>
+              <% } %>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Form Approval/Reject (hanya untuk PENDING) -->
+<% if (pinjaman.status === 'PENDING') { %>
+<div class="card animate-in card-approval" style="animation-delay:.4s">
+  <div class="card-header">
+    <h3><i class="bi bi-check2-square"></i> Keputusan Approval</h3>
+  </div>
+  <div class="card-body">
+    <div class="approval-grid">
+      <!-- Form Approve -->
+      <div class="approval-box approve-box">
+        <h4><i class="bi bi-check-circle text-green"></i> Setujui Pengajuan</h4>
+        <form action="/admin/pengajuan/<%= pinjaman.id %>/approve" method="POST" id="formApprove">
+          <div class="form-group">
+            <label class="form-label">Jenis Premi / Biaya Admin</label>
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" name="biaya_admin_type" value="persen" id="radioPersen" checked onchange="toggleBiayaAdmin()" />
+                Persentase (1% Fix Kebijakan)
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="biaya_admin_type" value="flat" id="radioFlat" onchange="toggleBiayaAdmin()" />
+                Nominal Flat (Rp)
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group" id="boxPersen">
+            <label class="form-label">Premi / Biaya Admin (%) <span class="badge badge-success" style="font-size:10px;">Fix: 1%</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-percent input-icon"></i>
+              <input type="number" name="biaya_admin_persen" class="form-control" placeholder="Contoh: 1" min="0" max="10" step="0.1" value="1"/>
+            </div>
+          </div>
+
+          <div class="form-group" id="boxFlat" style="display:none">
+            <label class="form-label">Premi / Biaya Admin (Rp)</label>
+            <div class="input-wrapper">
+              <i class="bi bi-cash input-icon"></i>
+              <input type="text" inputmode="numeric" name="biaya_admin_nominal" class="form-control input-rupiah" placeholder="Contoh: 50.000" value="<%= Math.round(pinjaman.nominal_pengajuan * 0.01).toLocaleString('id-ID') %>"/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Catatan (opsional)</label>
+            <textarea name="catatan_admin" class="form-control" rows="2" placeholder="<%= pinjaman.is_topup ? 'Contoh: Disetujui Top-Up. Sisa pinjaman lama #' + pinjaman.topup_pinjaman_id + ' otomatis dilunasi.' : 'Catatan persetujuan...' %>"></textarea>
+          </div>
+
+          <div class="preview-calc" id="previewCalc">
+            <div>Nominal Cair: <strong id="calcCair">-</strong></div>
+          </div>
+
+          <button type="submit" class="btn-success" id="btnApproveSubmit">
+            <i class="bi bi-check-lg"></i> <%= pinjaman.is_topup ? 'Setujui Top-Up & Lunasi Pinjaman Lama' : 'Setujui & Generate Cicilan' %>
+          </button>
+        </form>
+      </div>
+
+      <!-- Form Reject -->
+      <div class="approval-box reject-box">
+        <h4><i class="bi bi-x-circle text-red"></i> Tolak Pengajuan</h4>
+        <form action="/admin/pengajuan/<%= pinjaman.id %>/reject" method="POST" id="formReject">
+          <div class="form-group">
+            <label class="form-label">Alasan Penolakan <span class="required">*</span></label>
+            <textarea name="catatan_admin" class="form-control" rows="4" placeholder="Tuliskan alasan penolakan..." required></textarea>
+          </div>
+          <button type="submit" class="btn-danger" id="btnRejectSubmit">
+            <i class="bi bi-x-lg"></i> Tolak Pengajuan
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const nominalPengajuan = <%= pinjaman.nominal_pengajuan %>;
+  const isTopUp = <%= pinjaman.is_topup ? 'true' : 'false' %>;
+  const pelunasanLama = <%= parseFloat(pinjaman.pelunasan_pinjaman_lama || 0) %>;
+
+  function toggleBiayaAdmin() {
+    const isFlat = document.getElementById('radioFlat').checked;
+    document.getElementById('boxFlat').style.display   = isFlat ? 'block' : 'none';
+    document.getElementById('boxPersen').style.display = isFlat ? 'none'  : 'block';
+    updateCalc();
+  }
+
+  function updateCalc() {
+    const isFlat = document.getElementById('radioFlat').checked;
+    let biaya = 0;
+    if (isFlat) {
+      const rawAdmin = document.querySelector('[name="biaya_admin_nominal"]').value.replace(/[^0-9]/g, '');
+      biaya = parseFloat(rawAdmin) || 0;
+    } else {
+      const persen = parseFloat(document.querySelector('[name="biaya_admin_persen"]').value) || 0;
+      biaya = (persen / 100) * nominalPengajuan;
+    }
+    const potongTopUp = isTopUp ? pelunasanLama : 0;
+    const cair = Math.max(0, nominalPengajuan - biaya - potongTopUp);
+    
+    let calcHtml = `<div>Dana Bersih Dicairkan: <strong style="color: #34d399; font-size:16px;">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(cair)}</strong></div>`;
+    if (isTopUp) {
+      calcHtml += `<div style="font-size:11.5px; color:#fbbf24; margin-top:4px;"><i class="bi bi-info-circle"></i> Sisa pokok lama dilunasi: ${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(potongTopUp)} &bull; Biaya admin: ${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(biaya)}</div>`;
+    }
+    document.getElementById('previewCalc').innerHTML = calcHtml;
+  }
+
+  document.querySelectorAll('[name="biaya_admin_nominal"],[name="biaya_admin_persen"]')
+    .forEach(el => el.addEventListener('input', updateCalc));
+  updateCalc();
+
+  const formApprove = document.getElementById('formApprove');
+  if (formApprove) {
+    formApprove.addEventListener('submit', function() {
+      const btn = document.getElementById('btnApproveSubmit');
+      if (btn) {
+        btn.innerHTML = '<span class="spinner"></span> Menyetujui...';
+        btn.disabled = true;
+      }
+    });
+  }
+
+  const formReject = document.getElementById('formReject');
+  if (formReject) {
+    formReject.addEventListener('submit', function() {
+      const btn = document.getElementById('btnRejectSubmit');
+      if (btn) {
+        btn.innerHTML = '<span class="spinner"></span> Menolak...';
+        btn.disabled = true;
+      }
+    });
+  }
+</script>
+<% } %>

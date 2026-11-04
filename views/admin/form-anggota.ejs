@@ -1,0 +1,514 @@
+<%
+  currentPath = '/admin/anggota';
+  isAdmin = true;
+  const isEdit = Boolean(anggota && anggota.id);
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1>
+      <i class="bi <%= isEdit ? 'bi-person-gear' : 'bi-person-plus-fill' %>"></i>
+      <%= isEdit ? 'Edit Data Anggota' : 'Tambah Anggota Koperasi' %>
+    </h1>
+    <p><%= isEdit ? `Perbarui data untuk anggota: ${anggota.nama}` : 'Input NIK, cek ketersediaan data, dan lengkapi profil anggota baru' %></p>
+  </div>
+  <div class="page-header-actions">
+    <!-- Tombol Selesai (Kembali ke data anggota) -->
+    <a href="/admin/anggota" class="btn-secondary" id="btnSelesaiTop">
+      <i class="bi bi-arrow-left"></i> Selesai
+    </a>
+  </div>
+</div>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger animate-in">
+    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+  </div>
+<% } %>
+
+<div class="card animate-in" style="max-width: 900px; margin: 0 auto;">
+  <div class="card-header d-flex justify-between align-center">
+    <h3><i class="bi bi-card-text"></i> Formulir Data Anggota</h3>
+    <span class="badge badge-info"><%= isEdit ? 'Mode Perubahan Data' : 'Pendaftaran Anggota Baru' %></span>
+  </div>
+  <div class="card-body">
+    <form action="/admin/anggota/simpan" method="POST" id="formAnggota" novalidate>
+      <% if (isEdit) { %>
+        <input type="hidden" name="id" value="<%= anggota.id %>" />
+      <% } %>
+
+      <!-- Bagian 1: NIK & Tombol Cari -->
+      <div class="search-nik-box mb-4 p-3 rounded" style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);">
+        <label class="form-label" style="font-weight:600; color: #93c5fd;">
+          <i class="bi bi-credit-card-2-front"></i> 1. Nomor Induk Kependudukan (NIK) <span class="required">*</span>
+        </label>
+        <div class="d-flex gap-2 align-center">
+          <div class="input-wrapper flex-1">
+            <i class="bi bi-upc-scan input-icon"></i>
+            <input 
+              type="text" 
+              name="nik" 
+              id="inputNIK" 
+              class="form-control" 
+              placeholder="Masukkan 16 digit NIK..." 
+              value="<%= anggota ? (anggota.nik || '') : '' %>"
+              maxlength="20"
+              autocomplete="off"
+            />
+          </div>
+          <!-- Tombol Cari -->
+          <button type="button" class="btn-primary" id="btnCariNIK" style="white-space: nowrap;">
+            <i class="bi bi-search"></i> Cari Data
+          </button>
+        </div>
+        <small class="form-hint" id="nikFeedback">
+          Gunakan tombol Cari untuk memeriksa apakah NIK sudah pernah terdaftar di Koperasi BKN.
+        </small>
+      </div>
+
+      <!-- Bagian 2: Data Diri Anggota -->
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-person input-icon"></i>
+            <input 
+              type="text" 
+              name="nama" 
+              id="inputNama" 
+              class="form-control" 
+              placeholder="Contoh: Budi Santoso, S.Kom" 
+              value="<%= anggota ? (anggota.nama || '') : '' %>"
+              required 
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">NIP (Nomor Induk Pegawai) <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-person-badge input-icon"></i>
+            <input 
+              type="text" 
+              name="nip" 
+              id="inputNIP" 
+              class="form-control" 
+              placeholder="Contoh: 199005152020011001" 
+              value="<%= anggota ? (anggota.nip || '') : '' %>"
+              required 
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Unit Kerja <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-building input-icon"></i>
+            <input 
+              type="text" 
+              name="unit_kerja" 
+              id="inputUnitKerja" 
+              class="form-control" 
+              placeholder="Contoh: Subbagian Kepegawaian & TU" 
+              value="<%= anggota ? (anggota.unit_kerja || '') : '' %>"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Jabatan</label>
+          <div class="input-wrapper">
+            <i class="bi bi-briefcase input-icon"></i>
+            <input 
+              type="text" 
+              name="jabatan" 
+              id="inputJabatan" 
+              class="form-control" 
+              placeholder="Contoh: Pranata Komputer Ahli Muda" 
+              value="<%= anggota ? (anggota.jabatan || '') : '' %>"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Gaji Bersih / Take Home Pay (Rp/Bulan) <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-cash-stack input-icon"></i>
+            <input 
+              type="text" 
+              inputmode="numeric"
+              name="gaji_bersih" 
+              id="inputGajiBersih" 
+              class="form-control input-rupiah" 
+              placeholder="Contoh: 7.500.000" 
+              value="<%= anggota ? (anggota.gaji_bersih || 6500000) : 6500000 %>"
+              required
+            />
+          </div>
+          <small class="form-hint">Digunakan untuk menghitung batas maksimal angsuran pinjaman (Debt Service Ratio 50%).</small>
+        </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Nomor Handphone / WhatsApp</label>
+          <div class="input-wrapper">
+            <i class="bi bi-telephone input-icon"></i>
+            <input 
+              type="text" 
+              name="no_hp" 
+              id="inputNoHp" 
+              class="form-control" 
+              placeholder="Contoh: 081234567890" 
+              value="<%= anggota ? (anggota.no_hp || '') : '' %>"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Pegawai</label>
+          <div class="input-wrapper">
+            <i class="bi bi-envelope input-icon"></i>
+            <input 
+              type="email" 
+              name="email" 
+              id="inputEmail" 
+              class="form-control" 
+              placeholder="Contoh: nama@bkn.go.id" 
+              value="<%= anggota ? (anggota.email || '') : '' %>"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Alamat Tinggal / Domisili</label>
+        <div class="input-wrapper">
+          <textarea 
+            name="alamat" 
+            id="inputAlamat" 
+            class="form-control" 
+            rows="3" 
+            placeholder="Alamat lengkap tempat tinggal anggota..."
+          ><%= anggota ? (anggota.alamat || '') : '' %></textarea>
+        </div>
+      </div>
+
+      <!-- Bagian 3: Ketentuan Simpanan Pegawai (Simpanan Pokok & Simpanan Wajib) -->
+      <div class="card mb-4" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; overflow: hidden;">
+        <div class="card-header py-3 px-4 d-flex justify-between align-center" style="background: rgba(59, 130, 246, 0.08); border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
+          <h4 class="mb-0" style="font-size: 1rem; color: #93c5fd; font-weight: 600;">
+            <i class="bi bi-wallet2 text-primary me-2"></i> Ketentuan Simpanan Pegawai
+          </h4>
+          <span class="badge badge-info" style="font-size: 0.75rem;">Revisi Kebijakan Koperasi</span>
+        </div>
+        <div class="card-body p-4">
+          
+          <!-- Simpanan Pokok -->
+          <div class="mb-4 pb-3 border-bottom">
+            <div class="d-flex justify-between align-start mb-2">
+              <div>
+                <label class="form-label mb-1" style="font-size: 0.95rem; font-weight: 600; color: #f1f5f9;">
+                  a. Simpanan Pokok: <span style="color: #60a5fa;">Rp 1.005.000</span> (1x Saja di Awal)
+                </label>
+                <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                  Simpanan pokok dibayarkan satu kali saja di awal keanggotaan. Dapat dibayar langsung lunas atau dicicil maksimal hingga 12 bulan.
+                </p>
+              </div>
+              <span class="badge badge-primary">Total: Rp 1.005.000</span>
+            </div>
+
+            <% if (isEdit) { %>
+              <!-- Info Status Pokok Saat Mode Edit -->
+              <div class="p-3 mb-3 rounded" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08);">
+                <div class="d-flex justify-between align-center mb-1">
+                  <span class="text-muted" style="font-size: 0.85rem;">Status Simpanan Pokok Terbayar:</span>
+                  <% const terbayar = parseFloat(anggota.total_pokok_terbayar || 0); %>
+                  <% if (terbayar >= 1005000) { %>
+                    <span class="badge badge-success"><i class="bi bi-check-circle-fill"></i> LUNAS (Rp <%= terbayar.toLocaleString('id-ID') %>)</span>
+                  <% } else { %>
+                    <span class="badge badge-warning"><i class="bi bi-hourglass-split"></i> Belum Lunas: Rp <%= terbayar.toLocaleString('id-ID') %> / Rp 1.005.000</span>
+                  <% } %>
+                </div>
+              </div>
+            <% } %>
+
+            <!-- Pilihan Metode Pembayaran Pokok -->
+            <div class="form-grid-2 mt-3">
+              <div class="form-group mb-2">
+                <label class="form-label" style="font-size: 0.85rem;">Metode Pembayaran Simpanan Pokok:</label>
+                <div class="d-flex gap-3 align-center mt-1">
+                  <label class="d-flex align-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="skema_simpanan_pokok" 
+                      id="skemaLunas" 
+                      value="lunas" 
+                      <%= (!anggota || anggota.skema_simpanan_pokok !== 'cicil') ? 'checked' : '' %>
+                      onchange="toggleSkemaPokok()"
+                    />
+                    <span><strong>1x Bayar Lunas</strong> (Rp 1.005.000)</span>
+                  </label>
+                  <label class="d-flex align-center gap-2 cursor-pointer">
+                    <input 
+                      type="radio" 
+                      name="skema_simpanan_pokok" 
+                      id="skemaCicil" 
+                      value="cicil" 
+                      <%= (anggota && anggota.skema_simpanan_pokok === 'cicil') ? 'checked' : '' %>
+                      onchange="toggleSkemaPokok()"
+                    />
+                    <span><strong>Dicicil</strong> (Maks. 12 Bulan)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Pilihan Tenor Jika Dicicil -->
+              <div class="form-group mb-2" id="boxTenorCicilan" style="<%= (!anggota || anggota.skema_simpanan_pokok !== 'cicil') ? 'display:none;' : '' %>">
+                <label class="form-label" style="font-size: 0.85rem;">Tenor Cicilan Pokok (Maks. 12 Bulan):</label>
+                <div class="input-wrapper">
+                  <i class="bi bi-calendar-month input-icon"></i>
+                  <select name="tenor_simpanan_pokok" id="inputTenorPokok" class="form-control" onchange="hitungCicilanPokok()">
+                    <% for (let t = 2; t <= 12; t++) { %>
+                      <option value="<%= t %>" <%= (anggota && anggota.tenor_simpanan_pokok == t) || (!anggota && t === 12) ? 'selected' : '' %>>
+                        <%= t %> Bulan (Cicilan: Rp <%= Math.round(1005000 / t).toLocaleString('id-ID') %>/bln)
+                      </option>
+                    <% } %>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kalkulasi Box Cicilan Pokok -->
+            <div id="boxInfoCicilan" class="p-3 mt-2 rounded" style="background: rgba(59, 130, 246, 0.08); border: 1px dashed rgba(59, 130, 246, 0.3); <%= (!anggota || anggota.skema_simpanan_pokok !== 'cicil') ? 'display:none;' : '' %>">
+              <div class="d-flex justify-between align-center">
+                <div>
+                  <span class="text-muted" style="font-size: 0.85rem;">Besaran Potongan Cicilan Pokok per Bulan:</span>
+                  <div class="font-mono text-primary font-bold" id="labelNominalCicilan" style="font-size: 1.15rem; color: #60a5fa;">
+                    Rp 83.750 / bulan
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="badge badge-info" id="badgeDurasiCicilan">Selama 12 Bulan</span>
+                </div>
+              </div>
+            </div>
+
+            <% if (!isEdit) { %>
+              <!-- Setoran Pertama Saat Pendaftaran -->
+              <div class="mt-3 p-3 rounded" style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.2);">
+                <label class="d-flex align-center gap-2 cursor-pointer mb-2">
+                  <input type="checkbox" name="setor_pokok_sekarang" id="checkSetorSekarang" value="1" checked onchange="toggleInputSetorSekarang()" />
+                  <span style="font-weight: 600; color: #6ee7b7;">
+                    <i class="bi bi-piggy-bank"></i> Catat Pembayaran Simpanan Pokok Pertama Saat Ini
+                  </span>
+                </label>
+                <div id="boxNominalSetorAwal" class="input-wrapper mt-2">
+                  <i class="bi bi-cash input-icon"></i>
+                  <input 
+                    type="text" 
+                    inputmode="numeric"
+                    name="nominal_setor_sekarang" 
+                    id="inputNominalSetorAwal" 
+                    class="form-control input-rupiah" 
+                    value="1.005.000" 
+                    placeholder="Nominal pembayaran..."
+                  />
+                </div>
+                <small class="form-hint mt-1" id="hintSetorAwal" style="color: #a7f3d0;">
+                  Otomatis dicatat ke buku simpanan pokok anggota setelah data disimpan.
+                </small>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Simpanan Wajib -->
+          <div class="p-3 rounded" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);">
+            <div class="d-flex justify-between align-center">
+              <div>
+                <label class="form-label mb-1" style="font-size: 0.95rem; font-weight: 600; color: #34d399;">
+                  <i class="bi bi-calendar-check me-1"></i> b. Simpanan Wajib: Rp 100.000 / Bulan
+                </label>
+                <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                  Iuran rutin yang dipotong setiap bulan melalui sistem payroll gaji bagi seluruh anggota aktif.
+                </p>
+              </div>
+              <span class="badge badge-success font-mono font-bold" style="font-size: 0.9rem;">
+                Rp 100.000/bln
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><%= isEdit ? 'Ganti Password Akun (Opsional)' : 'Password Akun Pegawai' %></label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock input-icon"></i>
+          <input 
+            type="password" 
+            name="password" 
+            id="inputPassword" 
+            class="form-control" 
+            placeholder="<%= isEdit ? 'Biarkan kosong jika tidak ingin mengubah password' : 'Default: pegawai123' %>"
+          />
+        </div>
+        <% if (!isEdit) { %>
+          <small class="form-hint">Jika dikosongkan, password bawaan adalah: <code>pegawai123</code></small>
+        <% } %>
+      </div>
+
+      <!-- Action Row: Tombol Simpan, Tombol Hapus (Reset), Tombol Selesai -->
+      <div class="d-flex justify-between align-center mt-4 pt-3 border-top">
+        <div class="d-flex gap-2">
+          <!-- Tombol Simpan -->
+          <button type="submit" class="btn-primary" id="btnSimpan">
+            <i class="bi bi-check-lg"></i> <%= isEdit ? 'Simpan Perubahan' : 'Simpan Anggota' %>
+          </button>
+          
+          <!-- Tombol Hapus / Reset Input Form -->
+          <button type="button" class="btn-secondary" id="btnHapusForm" title="Kosongkan form input">
+            <i class="bi bi-trash3"></i> Hapus / Reset Form
+          </button>
+        </div>
+
+        <!-- Tombol Selesai -->
+        <a href="/admin/anggota" class="btn-outline-secondary" id="btnSelesai">
+          <i class="bi bi-check2-circle"></i> Selesai
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const btnCari   = document.getElementById('btnCariNIK');
+  const inputNIK  = document.getElementById('inputNIK');
+  const feedback  = document.getElementById('nikFeedback');
+  const btnHapus  = document.getElementById('btnHapusForm');
+  const form      = document.getElementById('formAnggota');
+
+  // ─── Fitur Tombol Cari NIK ────────────────────────────────────
+  btnCari.addEventListener('click', async function() {
+    const nik = inputNIK.value.trim();
+    if (!nik) {
+      feedback.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle"></i> Silakan ketikkan NIK terlebih dahulu sebelum mencari.</span>';
+      inputNIK.focus();
+      return;
+    }
+
+    feedback.innerHTML = '<span class="text-info"><i class="bi bi-hourglass-split"></i> Memeriksa data NIK ke database...</span>';
+
+    try {
+      const res = await fetch('/admin/anggota/cari?nik=' + encodeURIComponent(nik));
+      const result = await res.json();
+
+      if (result.success && result.exists) {
+        const d = result.data;
+        feedback.innerHTML = `<span class="text-warning"><i class="bi bi-info-circle-fill"></i> NIK sudah terdaftar atas nama: <strong>${d.nama}</strong> (NIP: ${d.nip}). Data otomatis ditampilkan di formulir.</span>`;
+        document.getElementById('inputNama').value      = d.nama || '';
+        document.getElementById('inputNIP').value       = d.nip || '';
+        document.getElementById('inputUnitKerja').value = d.unit_kerja || '';
+        document.getElementById('inputNoHp').value      = d.no_hp || '';
+        document.getElementById('inputEmail').value     = d.email || '';
+        document.getElementById('inputAlamat').value    = d.alamat || '';
+        if (d.gaji_bersih) {
+          document.getElementById('inputGajiBersih').value = d.gaji_bersih;
+        }
+      } else {
+        feedback.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> NIK belum terdaftar. NIK valid dan siap untuk disimpan sebagai anggota baru.</span>';
+      }
+    } catch (err) {
+      feedback.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Gagal memeriksa NIK: ' + err.message + '</span>';
+    }
+  });
+
+  // ─── Fitur Tombol Hapus Form (Reset) ──────────────────────────
+  btnHapus.addEventListener('click', function() {
+    if (confirm('Apakah Anda yakin ingin menghapus semua isian formulir ini?')) {
+      form.reset();
+      feedback.innerHTML = 'Formulir telah dikosongkan. Silakan isi kembali data anggota.';
+      inputNIK.focus();
+      toggleSkemaPokok();
+    }
+  });
+
+  // Inisialisasi awal kalkulasi pokok
+  toggleSkemaPokok();
+});
+
+// Fungsi Toggle Skema Pokok (Lunas vs Cicil)
+function toggleSkemaPokok() {
+  const isCicil = document.getElementById('skemaCicil')?.checked;
+  const boxTenor = document.getElementById('boxTenorCicilan');
+  const boxInfo = document.getElementById('boxInfoCicilan');
+  const inputSetorAwal = document.getElementById('inputNominalSetorAwal');
+  const hintSetor = document.getElementById('hintSetorAwal');
+
+  if (isCicil) {
+    if (boxTenor) boxTenor.style.display = 'block';
+    if (boxInfo) boxInfo.style.display = 'block';
+    hitungCicilanPokok();
+  } else {
+    if (boxTenor) boxTenor.style.display = 'none';
+    if (boxInfo) boxInfo.style.display = 'none';
+    if (inputSetorAwal) {
+      inputSetorAwal.value = '1.005.000';
+      inputSetorAwal.dispatchEvent(new Event('input'));
+    }
+    if (hintSetor) {
+      hintSetor.textContent = 'Setoran lunas Rp 1.005.000 akan otomatis dicatat ke buku simpanan pokok anggota.';
+    }
+  }
+}
+
+// Fungsi Hitung Cicilan Pokok
+function hitungCicilanPokok() {
+  const tenorEl = document.getElementById('inputTenorPokok');
+  if (!tenorEl) return;
+  const tenor = parseInt(tenorEl.value) || 12;
+  const cicilan = Math.round(1005000 / tenor);
+
+  const labelNominal = document.getElementById('labelNominalCicilan');
+  const badgeDurasi = document.getElementById('badgeDurasiCicilan');
+  const inputSetorAwal = document.getElementById('inputNominalSetorAwal');
+  const hintSetor = document.getElementById('hintSetorAwal');
+
+  if (labelNominal) {
+    labelNominal.textContent = `Rp ${cicilan.toLocaleString('id-ID')} / bulan`;
+  }
+  if (badgeDurasi) {
+    badgeDurasi.textContent = `Selama ${tenor} Bulan`;
+  }
+
+  // Jika sedang mencicil, default setoran pertama adalah 1 bulan cicilan
+  if (inputSetorAwal && document.getElementById('skemaCicil')?.checked) {
+    inputSetorAwal.value = cicilan.toLocaleString('id-ID');
+    inputSetorAwal.dispatchEvent(new Event('input'));
+  }
+  if (hintSetor) {
+    hintSetor.textContent = `Setoran cicilan bulan ke-1 (Rp ${cicilan.toLocaleString('id-ID')}) akan dicatat ke buku simpanan pokok anggota.`;
+  }
+}
+
+// Fungsi Toggle Input Setoran Sekarang
+function toggleInputSetorSekarang() {
+  const chk = document.getElementById('checkSetorSekarang');
+  const box = document.getElementById('boxNominalSetorAwal');
+  const hint = document.getElementById('hintSetorAwal');
+  if (!chk) return;
+  if (chk.checked) {
+    if (box) box.style.display = 'block';
+    if (hint) hint.style.display = 'block';
+  } else {
+    if (box) box.style.display = 'none';
+    if (hint) hint.style.display = 'none';
+  }
+}
+</script>

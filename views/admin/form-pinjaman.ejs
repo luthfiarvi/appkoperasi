@@ -1,0 +1,259 @@
+<%
+  currentPath = '/admin/pinjaman';
+  isAdmin = true;
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-cash-stack"></i> Input Pinjaman Baru Anggota</h1>
+    <p>Buat pembiayaan pinjaman baru dengan skema bunga menurun (sliding rate) dan angsuran otomatis</p>
+  </div>
+  <div class="page-header-actions d-flex gap-2">
+    <a href="/admin/laporan" class="btn-secondary">
+      <i class="bi bi-bar-chart-line-fill"></i> Laporan Keuangan
+    </a>
+    <a href="/admin/pinjaman" class="btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+  </div>
+</div>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger animate-in">
+    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+  </div>
+<% } %>
+
+<div class="card animate-in" style="max-width: 900px; margin: 0 auto;">
+  <div class="card-header d-flex justify-between align-center">
+    <h3><i class="bi bi-file-earmark-plus"></i> Formulir Pinjaman & Angsuran Otomatis</h3>
+    <span class="badge badge-success">Pencairan Langsung</span>
+  </div>
+  <div class="card-body">
+    <form action="/admin/pinjaman/buat" method="POST" id="formPinjamanAdmin">
+
+      <!-- 1. Pilih Anggota -->
+      <div class="form-group mb-4">
+        <label class="form-label">Pilih Anggota Peminjam <span class="required">*</span></label>
+        <div class="input-wrapper">
+          <i class="bi bi-person input-icon"></i>
+          <select name="user_id" id="selectUser" class="form-control" required>
+            <option value="">-- Pilih Anggota Pegawai --</option>
+            <% allUsers.forEach(u => { %>
+              <option value="<%= u.id %>" data-gaji="<%= u.gaji_bersih || 6500000 %>">
+                <%= u.nama %> &mdash; NIP: <%= u.nip %> (<%= u.unit_kerja || 'Kanreg V' %>) &bull; Gaji: Rp <%= Number(u.gaji_bersih || 6500000).toLocaleString('id-ID') %>
+              </option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <!-- 2. Parameter Pinjaman: Plafon, Bunga, Tenor (Lama Cicilan) -->
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Nominal Pinjaman / Plafon (Rp) <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-cash-coin input-icon"></i>
+            <input 
+              type="text" 
+              inputmode="numeric"
+              name="nominal_pengajuan" 
+              id="inputPlafon" 
+              class="form-control input-rupiah" 
+              placeholder="Contoh: 10.000.000" 
+              required 
+            />
+          </div>
+          <small class="form-hint">Minimal Rp 500.000</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tenor / Lama Cicilan <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-calendar-week input-icon"></i>
+            <select name="tenor_bulan" id="selectTenor" class="form-control" required>
+              <option value="">-- Pilih Tenor Cicilan --</option>
+              <% for (let i = 1; i <= 36; i++) { %>
+                <option value="<%= i %>" <%= i === 10 ? 'selected' : '' %>><%= i %> Bulan</option>
+              <% } %>
+            </select>
+          </div>
+          <small class="form-hint">Pilihan 1 s.d. 36 bulan</small>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Suku Bunga (% per Bulan) <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-percent input-icon"></i>
+            <input 
+              type="number" 
+              name="suku_bunga_persen" 
+              id="inputBunga" 
+              class="form-control" 
+              value="2.0" 
+              step="0.1" 
+              min="0.1" 
+              max="10" 
+              required 
+            />
+          </div>
+          <small class="form-hint">Metode Bunga Menurun / Sliding Rate</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Premi Pinjaman / Administrasi</label>
+          <div class="input-wrapper">
+            <i class="bi bi-tag input-icon"></i>
+            <input 
+              type="text" 
+              inputmode="numeric"
+              name="biaya_admin_nominal" 
+              id="inputAdmin" 
+              class="form-control input-rupiah" 
+              value="50.000" 
+              placeholder="Contoh: 50.000"
+            />
+          </div>
+          <input type="hidden" name="biaya_admin_type" value="flat" />
+          <small class="form-hint">Dipotong saat pencairan (Dana Bersih = Plafon - Premi)</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Keperluan / Keterangan Pinjaman</label>
+        <textarea name="keperluan" id="inputKeperluan" class="form-control" rows="2" placeholder="Contoh: Pembiayaan pendidikan, renovasi rumah, modal usaha, dll."></textarea>
+      </div>
+
+      <!-- Preview Angsuran Otomatis (Real-time Calculation) -->
+      <div class="preview-box p-4 rounded mb-4" id="boxAngsuranOtomatis" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.08)); border: 1px solid rgba(59,130,246,0.25);">
+        <h4 style="font-size:15px; margin-bottom:12px; color:#93c5fd;">
+          <i class="bi bi-calculator"></i> b. Perhitungan Angsuran Otomatis (Bulan Pertama)
+        </h4>
+        <div class="preview-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px;">
+          <div>
+            <div class="text-muted" style="font-size:12px;">Angsuran Pokok Tetap</div>
+            <div id="prevPokok" style="font-size:18px; font-weight:700; color:#f1f5f9;">Rp 0</div>
+            <div class="text-muted" style="font-size:11px;">Plafon &divide; Tenor</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:12px;">Bunga Bulan Ke-1 (Sliding Rate)</div>
+            <div id="prevBunga" style="font-size:18px; font-weight:700; color:#fbbf24;">Rp 0</div>
+            <div class="text-muted" style="font-size:11px;">2% &times; Sisa Pokok</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:12px;">Total Potongan Angsuran Bln 1</div>
+            <div id="prevTotal" style="font-size:20px; font-weight:800; color:#34d399;">Rp 0</div>
+            <div class="text-muted" style="font-size:11px;">Pokok + Bunga</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size:12px;">Dana Bersih Diterima</div>
+            <div id="prevCair" style="font-size:18px; font-weight:700; color:#60a5fa;">Rp 0</div>
+            <div class="text-muted" style="font-size:11px;">Plafon &minus; Premi Pinjaman</div>
+          </div>
+        </div>
+
+        <div id="prevDSR" class="mt-3 p-2 rounded text-center" style="display:none; font-size:12.5px; font-weight:600;"></div>
+      </div>
+
+      <!-- Action Buttons: c> Tombol Simpan, d> Tombol Hapus, Selesai -->
+      <div class="d-flex justify-between align-center pt-3 border-top">
+        <div class="d-flex gap-2">
+          <!-- c> Tombol Simpan -->
+          <button type="submit" class="btn-primary" id="btnSimpanPinjaman">
+            <i class="bi bi-check-circle-fill"></i> c. Simpan & Buat Pinjaman
+          </button>
+          <!-- d> Tombol Hapus / Reset -->
+          <button type="button" class="btn-secondary" id="btnHapusPinjamanForm" title="Kosongkan form">
+            <i class="bi bi-trash3"></i> d. Hapus / Reset Form
+          </button>
+        </div>
+
+        <a href="/admin/pinjaman" class="btn-outline-secondary">
+          <i class="bi bi-arrow-left"></i> Selesai
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectUser  = document.getElementById('selectUser');
+  const inputPlafon = document.getElementById('inputPlafon');
+  const selectTenor = document.getElementById('selectTenor');
+  const inputBunga  = document.getElementById('inputBunga');
+  const inputAdmin  = document.getElementById('inputAdmin');
+  const btnHapus    = document.getElementById('btnHapusPinjamanForm');
+  const form        = document.getElementById('formPinjamanAdmin');
+  const dsrBox      = document.getElementById('prevDSR');
+
+  function formatRp(val) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+  }
+
+  function hitungOtomatis() {
+    const plafon = parseFloat(String(inputPlafon.value).replace(/[^0-9]/g, '')) || 0;
+    const tenor  = parseInt(selectTenor.value) || 0;
+    const rate   = parseFloat(inputBunga.value) || 0;
+    const admin  = parseFloat(String(inputAdmin.value).replace(/[^0-9]/g, '')) || 0;
+
+    const opt = selectUser.options[selectUser.selectedIndex];
+    const gaji = opt && opt.dataset.gaji ? parseFloat(opt.dataset.gaji) : 6500000;
+
+    if (plafon > 0 && tenor > 0) {
+      const pokok = plafon / tenor;
+      const bunga = (rate / 100) * plafon;
+      const total = pokok + bunga;
+      const cair  = Math.max(0, plafon - admin);
+      const dsrPct = Math.round((total / gaji) * 100);
+
+      document.getElementById('prevPokok').innerText = formatRp(pokok);
+      document.getElementById('prevBunga').innerText = formatRp(bunga);
+      document.getElementById('prevTotal').innerText = formatRp(total);
+      document.getElementById('prevCair').innerText  = formatRp(cair);
+
+      dsrBox.style.display = 'block';
+      if (dsrPct <= 40) {
+        dsrBox.style.background = 'rgba(16,185,129,0.15)';
+        dsrBox.style.color = '#6ee7b7';
+        dsrBox.style.border = '1px solid rgba(16,185,129,0.3)';
+        dsrBox.innerHTML = `<i class="bi bi-check-circle-fill"></i> Analisis DSR: <strong>${dsrPct}% (AMAN &le; 40% Gaji)</strong> &bull; Gaji: ${formatRp(gaji)}`;
+      } else if (dsrPct <= 50) {
+        dsrBox.style.background = 'rgba(245,158,11,0.15)';
+        dsrBox.style.color = '#fde68a';
+        dsrBox.style.border = '1px solid rgba(245,158,11,0.3)';
+        dsrBox.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> Analisis DSR: <strong>${dsrPct}% (PERHATIAN 40-50%)</strong> &bull; Mendekati batas maksimal`;
+      } else {
+        dsrBox.style.background = 'rgba(239,68,68,0.18)';
+        dsrBox.style.color = '#fca5a5';
+        dsrBox.style.border = '1px solid rgba(239,68,68,0.4)';
+        dsrBox.innerHTML = `<i class="bi bi-x-octagon-fill"></i> Analisis DSR: <strong>${dsrPct}% (PERINGATAN: Melebihi Batas 50% Gaji)</strong> &bull; Risiko tinggi keterlambatan`;
+      }
+    } else {
+      document.getElementById('prevPokok').innerText = 'Rp 0';
+      document.getElementById('prevBunga').innerText = 'Rp 0';
+      document.getElementById('prevTotal').innerText = 'Rp 0';
+      document.getElementById('prevCair').innerText  = 'Rp 0';
+      dsrBox.style.display = 'none';
+    }
+  }
+
+  selectUser.addEventListener('change', hitungOtomatis);
+  inputPlafon.addEventListener('input', hitungOtomatis);
+  selectTenor.addEventListener('change', hitungOtomatis);
+  inputBunga.addEventListener('input', hitungOtomatis);
+  inputAdmin.addEventListener('input', hitungOtomatis);
+
+  btnHapus.addEventListener('click', function() {
+    if (confirm('Kosongkan semua isian form pinjaman ini?')) {
+      form.reset();
+      hitungOtomatis();
+    }
+  });
+
+  hitungOtomatis();
+});
+</script>

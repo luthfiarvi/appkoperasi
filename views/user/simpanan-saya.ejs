@@ -1,0 +1,200 @@
+<%
+  currentPath = '/simpanan-saya';
+  isAdmin = false;
+  function formatRp(val) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+  }
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-wallet2"></i> Buku Simpanan Saya</h1>
+    <p>Rekapitulasi saldo dan histori mutasi simpanan Anda di Koperasi Pegawai BKN Kanreg V</p>
+  </div>
+</div>
+
+<!-- 4 Saldo Box -->
+<div class="stats-grid mb-4 animate-in">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #60a5fa;">
+      <i class="bi bi-bank"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">a. Simpanan Pokok</div>
+      <div class="stat-value" style="color: #60a5fa;"><%= formatRp(saldo.pokok) %></div>
+      <div class="stat-desc mt-1">
+        <% if (isPokokLunas) { %>
+          <span class="badge badge-success" style="font-size:11px; padding:2px 7px;">
+            <i class="bi bi-check-circle-fill"></i> LUNAS (Target Rp 1.005.000)
+          </span>
+        <% } else { %>
+          <span class="badge badge-warning" style="font-size:11px; padding:2px 7px;">
+            <i class="bi bi-hourglass-split"></i> Dicicil: Sisa <%= formatRp(sisaPokok) %>
+          </span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(16,185,129,0.15); color: #34d399;">
+      <i class="bi bi-calendar-check"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">b. Simpanan Wajib</div>
+      <div class="stat-value" style="color: #34d399;"><%= formatRp(saldo.wajib) %></div>
+      <div class="stat-desc mt-1">Iuran wajib Rp 100.000 / bulan</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+      <i class="bi bi-piggy-bank"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">c. Simpanan Sukarela</div>
+      <div class="stat-value" style="color: #fbbf24;"><%= formatRp(saldo.sukarela) %></div>
+      <div class="stat-desc mt-1">Tabungan sukarela fleksibel</div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-highlight">
+    <div class="stat-icon" style="background: rgba(139,92,246,0.2); color: #a78bfa;">
+      <i class="bi bi-cash-stack"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">d. Total Keseluruhan</div>
+      <div class="stat-value" style="color: #a78bfa;"><%= formatRp(saldo.total) %></div>
+      <div class="stat-desc mt-1">Total hak aset simpanan Anda</div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress Card Status Pemenuhan Simpanan Pokok -->
+<div class="card mb-4 animate-in" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(59, 130, 246, 0.25);">
+  <div class="card-body p-4">
+    <div class="d-flex justify-between align-center mb-3">
+      <div>
+        <h4 style="margin: 0; font-size: 1.05rem; color: #f8fafc; font-weight: 600;">
+          <i class="bi bi-shield-check text-primary me-2"></i> Status Simpanan Pokok Anda
+        </h4>
+        <p class="text-muted mb-0" style="font-size: 0.85rem; margin-top: 2px;">
+          Kewajiban 1x saja di awal keanggotaan sebesar <strong>Rp 1.005.000</strong> (dapat dicicil maksimal 12 bulan).
+        </p>
+      </div>
+      <div>
+        <% if (isPokokLunas) { %>
+          <span class="badge badge-success" style="font-size: 0.85rem; padding: 6px 12px;">
+            <i class="bi bi-check-circle-fill"></i> LUNAS 100%
+          </span>
+        <% } else { %>
+          <span class="badge badge-warning" style="font-size: 0.85rem; padding: 6px 12px;">
+            <i class="bi bi-hourglass-split"></i> Progres: <%= persenPokok %>% (<%= formatRp(saldo.pokok) %> / Rp 1.005.000)
+          </span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div style="height: 12px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;" class="mb-2">
+      <div style="width: <%= persenPokok %>%; height: 100%; background: <%= isPokokLunas ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #3b82f6, #60a5fa)' %>; border-radius: 999px; transition: width 0.5s ease;"></div>
+    </div>
+
+    <div class="d-flex justify-between align-center" style="font-size: 0.85rem;">
+      <span class="text-muted">
+        Sudah Disetor: <strong style="color: #60a5fa;"><%= formatRp(saldo.pokok) %></strong>
+      </span>
+      <% if (!isPokokLunas) { %>
+        <span class="text-warning">
+          Sisa Kewajiban: <strong><%= formatRp(sisaPokok) %></strong>
+          <% if (userPref && userPref.skema_simpanan_pokok === 'cicil') { %>
+            (Cicilan: <%= formatRp(cicilanPerBulan) %>/bulan)
+          <% } %>
+        </span>
+      <% } else { %>
+        <span class="text-success">
+          <i class="bi bi-patch-check-fill"></i> Simpanan pokok telah lunas. Anda tidak memiliki tanggungan simpanan pokok lagi.
+        </span>
+      <% } %>
+    </div>
+
+    <!-- Guideline Box Revisi Ketentuan Simpanan Pegawai -->
+    <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+      <div class="d-flex gap-3 align-start">
+        <div style="color: #60a5fa; font-size: 1.3rem; line-height: 1;">
+          <i class="bi bi-info-circle-fill"></i>
+        </div>
+        <div style="font-size: 0.85rem; line-height: 1.5; color: #cbd5e1;">
+          <strong style="color: #93c5fd;">Ketentuan Simpanan Koperasi Pegawai BKN:</strong>
+          <ul class="mb-0 mt-1 ps-3" style="list-style-type: disc;">
+            <li><strong>Simpanan Pokok:</strong> Rp 1.005.000 dibayar 1x saja di awal keanggotaan. Pembayaran dapat dicicil maksimal 12 bulan (misal Rp 83.750/bulan).</li>
+            <li><strong>Simpanan Wajib:</strong> Rp 100.000 / bulan dipotong secara rutin setiap bulan melalui sistem payroll.</li>
+            <li><strong>Simpanan Sukarela:</strong> Tabungan sukarela fleksibel yang dapat disetor maupun ditarik sewaktu-waktu.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Tabel Histori Mutasi -->
+<div class="card animate-in">
+  <div class="card-header">
+    <h3><i class="bi bi-clock-history"></i> Riwayat Mutasi Simpanan (<%= riwayat.length %>)</h3>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="40">No</th>
+            <th>Tanggal</th>
+            <th>Kategori Simpanan</th>
+            <th>Tipe Transaksi</th>
+            <th>Keterangan</th>
+            <th class="text-right">Nominal (Rp)</th>
+            <th width="90" class="text-center">Kwitansi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (riwayat.length === 0) { %>
+            <tr><td colspan="7" class="text-center py-5 text-muted">Belum ada mutasi simpanan tercatat.</td></tr>
+          <% } else { %>
+            <% riwayat.forEach((r, idx) => { %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td><%= new Date(r.tanggal).toLocaleDateString('id-ID', { dateStyle: 'medium' }) %></td>
+                <td>
+                  <% if (r.jenis_simpanan === 'pokok') { %>
+                    <span class="badge badge-info">Simpanan Pokok</span>
+                  <% } else if (r.jenis_simpanan === 'wajib') { %>
+                    <span class="badge badge-success">Simpanan Wajib</span>
+                  <% } else { %>
+                    <span class="badge badge-warning">Simpanan Sukarela</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (r.tipe_transaksi === 'setor') { %>
+                    <span style="color:#34d399;font-weight:600;"><i class="bi bi-arrow-down-left"></i> Setoran (+)</span>
+                  <% } else { %>
+                    <span style="color:#f87171;font-weight:600;"><i class="bi bi-arrow-up-right"></i> Penarikan (-)</span>
+                  <% } %>
+                </td>
+                <td><%= r.keterangan || '-' %></td>
+                <td class="text-right font-mono font-bold" style="<%= r.tipe_transaksi === 'setor' ? 'color:#34d399;' : 'color:#f87171;' %>">
+                  <%= r.tipe_transaksi === 'setor' ? '+' : '-' %> <%= formatRp(r.nominal) %>
+                </td>
+                <td class="text-center">
+                  <a href="/simpanan/transaksi/<%= r.id %>/kwitansi" target="_blank" class="btn-sm btn-outline-primary" title="Cetak Kwitansi">
+                    <i class="bi bi-printer"></i>
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

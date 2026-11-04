@@ -1,0 +1,152 @@
+<%
+  currentPath = '/simulasi';
+  isAdmin = false;
+%>
+
+<div class="page-header animate-in">
+  <h1><i class="bi bi-calculator"></i> Simulasi Pinjaman</h1>
+  <p>Hitung perkiraan angsuran sebelum mengajukan pinjaman.</p>
+</div>
+
+<!-- Form Simulasi -->
+<div class="card animate-in" style="animation-delay:.1s">
+  <div class="card-header">
+    <h3><i class="bi bi-sliders"></i> Parameter Simulasi</h3>
+  </div>
+  <div class="card-body">
+    <form id="formSimulasi" action="/simulasi" method="POST">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Plafon Pinjaman (Rp)</label>
+          <div class="input-wrapper">
+            <i class="bi bi-cash input-icon"></i>
+            <input
+              type="text"
+              inputmode="numeric"
+              name="plafon"
+              id="inputPlafon"
+              class="form-control input-rupiah"
+              placeholder="Contoh: 10.000.000"
+              value="<%= typeof input !== 'undefined' && input.plafon ? input.plafon : '' %>"
+              required
+            />
+          </div>
+          <small class="form-hint">Minimal Rp 100.000</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tenor (Bulan)</label>
+          <div class="input-wrapper">
+            <i class="bi bi-calendar-range input-icon"></i>
+            <select name="tenor" id="inputTenor" class="form-control" required>
+              <option value="">-- Pilih Tenor (Maks. 36 Bulan) --</option>
+              <% for (let i = 1; i <= 36; i++) { %>
+                <option value="<%= i %>"
+                  <%= (typeof input !== 'undefined' && input.tenor == i) ? 'selected' : '' %>>
+                  <%= i %> Bulan
+                </option>
+              <% } %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box info-blue">
+        <i class="bi bi-info-circle"></i>
+        <span>Suku bunga: <strong>2% per bulan (Bunga Menurun / Sliding Rate)</strong>. Angsuran pokok tetap setiap bulan, bunga dihitung dari sisa pokok.</span>
+      </div>
+
+      <button type="submit" class="btn-primary" id="btnSimulasi">
+        <i class="bi bi-play-circle"></i> Hitung Simulasi
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Hasil Simulasi -->
+<% if (typeof simulasi !== 'undefined' && simulasi && simulasi.length > 0) { %>
+<div class="card animate-in mt-4" id="hasilSimulasi">
+  <div class="card-header">
+    <h3><i class="bi bi-table"></i> Hasil Simulasi Angsuran</h3>
+    <div class="header-badges">
+      <span class="badge badge-blue">Plafon: <%= new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(input.plafon) %></span>
+      <span class="badge badge-purple">Tenor: <%= input.tenor %> Bulan</span>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-strip">
+    <div class="summary-item">
+      <div class="summary-label">Angsuran Pokok/Bulan</div>
+      <div class="summary-value"><%= new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(simulasi[0].pokok_angsuran) %></div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Bunga Awal (Bln 1)</div>
+      <div class="summary-value"><%= new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(simulasi[0].bunga_angsuran) %></div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Total Bunga</div>
+      <div class="summary-value text-amber"><%= new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(totalBunga) %></div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Total Bayar</div>
+      <div class="summary-value text-green"><%= new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(totalBayar) %></div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-simulasi">
+        <thead>
+          <tr>
+            <th>Bulan ke</th>
+            <th>Angsuran Pokok (Rp)</th>
+            <th>Bunga 2% (Rp)</th>
+            <th>Total Potongan Gaji (Rp)</th>
+            <th>Sisa Pokok (Rp)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% simulasi.forEach((row, idx) => { %>
+            <tr class="<%= idx === 0 ? 'row-first' : '' %>">
+              <td class="text-center">
+                <span class="bulan-badge"><%= row.bulan_ke %></span>
+              </td>
+              <td class="text-right">
+                <%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.pokok_angsuran) %>
+              </td>
+              <td class="text-right text-amber">
+                <%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.bunga_angsuran) %>
+              </td>
+              <td class="text-right fw-700 text-blue">
+                <%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.total_angsuran) %>
+              </td>
+              <td class="text-right text-muted">
+                <%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(row.sisa_pokok) %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+        <tfoot>
+          <tr class="table-total">
+            <td class="text-center fw-700">TOTAL</td>
+            <td class="text-right fw-700"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(input.plafon) %></td>
+            <td class="text-right fw-700 text-amber"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(totalBunga) %></td>
+            <td class="text-right fw-700 text-blue"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(totalBayar) %></td>
+            <td class="text-right text-muted">-</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="action-row mt-4">
+      <a href="/pengajuan?nominal=<%= input.plafon %>&tenor=<%= input.tenor %>" class="btn-primary">
+        <i class="bi bi-send-plus"></i> Ajukan Pinjaman Ini
+      </a>
+      <button onclick="window.print()" class="btn-secondary">
+        <i class="bi bi-printer"></i> Cetak Simulasi
+      </button>
+    </div>
+  </div>
+</div>
+<% } %>

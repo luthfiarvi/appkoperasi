@@ -1,0 +1,405 @@
+<%
+  currentPath = '/admin/simpanan';
+  isAdmin = true;
+  function formatRp(val) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+  }
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-wallet2"></i> Data Simpanan Anggota</h1>
+    <p>Kelola simpanan pokok, simpanan wajib, simpanan sukarela, dan total saldo simpanan anggota</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn-primary" onclick="openModalTransaksi()">
+      <i class="bi bi-plus-circle-fill"></i> Tambah Transaksi Simpanan
+    </button>
+  </div>
+</div>
+
+<% if (locals.success) { %>
+  <div class="alert alert-success animate-in">
+    <i class="bi bi-check-circle-fill"></i> <%= success %>
+  </div>
+<% } %>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger animate-in">
+    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+  </div>
+<% } %>
+
+<!-- 4 Card Ringkasan Keseluruhan Simpanan Koperasi -->
+<div class="stats-grid mb-4 animate-in">
+  <!-- 1. Simpanan Pokok -->
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #60a5fa;">
+      <i class="bi bi-bank"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">a. Simpanan Pokok</div>
+      <div class="stat-value" style="color: #60a5fa;"><%= formatRp(grandTotal.pokok) %></div>
+      <div class="stat-desc">Kewajiban 1x di awal (Rp 1.005.000)</div>
+    </div>
+  </div>
+
+  <!-- 2. Simpanan Wajib -->
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(16,185,129,0.15); color: #34d399;">
+      <i class="bi bi-calendar-check"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">b. Simpanan Wajib</div>
+      <div class="stat-value" style="color: #34d399;"><%= formatRp(grandTotal.wajib) %></div>
+      <div class="stat-desc">Iuran rutin Rp 100.000/bln per anggota</div>
+    </div>
+  </div>
+
+  <!-- 3. Simpanan Sukarela -->
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+      <i class="bi bi-piggy-bank"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">c. Simpanan Sukarela</div>
+      <div class="stat-value" style="color: #fbbf24;"><%= formatRp(grandTotal.sukarela) %></div>
+      <div class="stat-desc">Tabungan fleksibel (setor/tarik)</div>
+    </div>
+  </div>
+
+  <!-- 4. Total Keseluruhan -->
+  <div class="stat-card stat-highlight">
+    <div class="stat-icon" style="background: rgba(139,92,246,0.2); color: #a78bfa;">
+      <i class="bi bi-cash-stack"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">d. Total Keseluruhan</div>
+      <div class="stat-value" style="color: #a78bfa;"><%= formatRp(grandTotal.total) %></div>
+      <div class="stat-desc">Total aset simpanan anggota</div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Toolbar -->
+<div class="card mb-4 animate-in">
+  <div class="card-body py-3">
+    <form action="/admin/simpanan" method="GET" class="filter-form d-flex gap-2">
+      <div class="input-wrapper flex-1">
+        <i class="bi bi-search input-icon"></i>
+        <input 
+          type="text" 
+          name="q" 
+          class="form-control" 
+          placeholder="Cari anggota berdasarkan Nama, NIP, NIK, atau Unit Kerja..." 
+          value="<%= q || '' %>"
+        />
+      </div>
+      <button type="submit" class="btn-primary">
+        <i class="bi bi-search"></i> Cari
+      </button>
+      <% if (q) { %>
+        <a href="/admin/simpanan" class="btn-secondary">Reset</a>
+      <% } %>
+    </form>
+  </div>
+</div>
+
+<!-- Tabel Rincian Simpanan per Anggota -->
+<div class="card animate-in">
+  <div class="card-header">
+    <h3><i class="bi bi-table"></i> Rincian Saldo Simpanan per Anggota (<%= simpananList.length %>)</h3>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="40">No</th>
+            <th>Nama Anggota</th>
+            <th>NIP</th>
+            <th>Unit Kerja</th>
+            <th class="text-right">Simpanan Pokok<br><small class="text-muted" style="font-weight: normal;">(Rp 1.005.000)</small></th>
+            <th class="text-right">Simpanan Wajib<br><small class="text-muted" style="font-weight: normal;">(Rp 100.000/bln)</small></th>
+            <th class="text-right">Simpanan Sukarela</th>
+            <th class="text-right">Total Keseluruhan</th>
+            <th width="140" class="text-center">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (simpananList.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-wallet" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                Tidak ada data simpanan.
+              </td>
+            </tr>
+          <% } else { %>
+            <% simpananList.forEach((s, idx) => { %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td>
+                  <div class="d-flex align-center gap-2">
+                    <div class="avatar-sm"><%= s.nama.charAt(0).toUpperCase() %></div>
+                    <div>
+                      <strong><%= s.nama %></strong>
+                      <% if (s.nik) { %>
+                        <div class="text-muted" style="font-size:11px">NIK: <%= s.nik %></div>
+                      <% } %>
+                    </div>
+                  </div>
+                </td>
+                <td><code><%= s.nip %></code></td>
+                <td><%= s.unit_kerja || 'Kanreg V BKN' %></td>
+                <td class="text-right">
+                  <div class="font-mono" style="color: #93c5fd; font-weight: 600;"><%= formatRp(s.simpanan_pokok) %></div>
+                  <% const sPokok = parseFloat(s.simpanan_pokok || 0); %>
+                  <% if (sPokok >= 1005000) { %>
+                    <span class="badge badge-success" style="font-size: 10px; padding: 2px 6px;">
+                      <i class="bi bi-check-circle-fill"></i> Lunas
+                    </span>
+                  <% } else { %>
+                    <span class="badge badge-warning" style="font-size: 10px; padding: 2px 6px;" title="Target: Rp 1.005.000 (Maks 12 Bulan)">
+                      <i class="bi bi-hourglass-split"></i> Dicicil (<%= Math.min(100, Math.round((sPokok / 1005000) * 100)) %>%)
+                    </span>
+                  <% } %>
+                </td>
+                <td class="text-right font-mono" style="color: #6ee7b7;"><%= formatRp(s.simpanan_wajib) %></td>
+                <td class="text-right font-mono" style="color: #fde047;"><%= formatRp(s.simpanan_sukarela) %></td>
+                <td class="text-right font-mono font-bold" style="color: #c4b5fd;"><%= formatRp(s.total_simpanan) %></td>
+                <td class="text-center">
+                  <div class="btn-group gap-1">
+                    <button type="button" class="btn-sm btn-outline-primary" onclick="openModalTransaksiFor('<%= s.user_id %>', '<%= s.nama %>')" title="Tambah Transaksi Setor/Tarik">
+                      <i class="bi bi-plus-slash-minus"></i> Transaksi
+                    </button>
+                    <a href="/admin/simpanan/anggota/<%= s.user_id %>" class="btn-sm btn-outline-secondary" title="Lihat Buku Mutasi Simpanan">
+                      <i class="bi bi-book"></i> Buku
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+        <% if (simpananList.length > 0) { %>
+          <tfoot>
+            <tr style="background: rgba(255,255,255,0.03); font-weight:700;">
+              <td colspan="4" class="text-right">TOTAL KESELURUHAN:</td>
+              <td class="text-right font-mono" style="color: #93c5fd;"><%= formatRp(grandTotal.pokok) %></td>
+              <td class="text-right font-mono" style="color: #6ee7b7;"><%= formatRp(grandTotal.wajib) %></td>
+              <td class="text-right font-mono" style="color: #fde047;"><%= formatRp(grandTotal.sukarela) %></td>
+              <td class="text-right font-mono" style="color: #a78bfa; font-size:15px;"><%= formatRp(grandTotal.total) %></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        <% } %>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Input Transaksi Simpanan -->
+<div id="modalTransaksi" class="modal-backdrop" style="display:none;">
+  <div class="modal-dialog animate-in" style="max-width: 520px;">
+    <div class="modal-content card">
+      <div class="card-header d-flex justify-between align-center">
+        <h3><i class="bi bi-cash-coin"></i> Input Transaksi Simpanan</h3>
+        <button type="button" class="btn-close" onclick="closeModalTransaksi()">&times;</button>
+      </div>
+      <div class="card-body">
+        <form action="/admin/simpanan/transaksi" method="POST" id="formTransaksiSimpanan">
+          <input type="hidden" name="redirect_to" value="/admin/simpanan" />
+
+          <div class="form-group">
+            <label class="form-label">Pilih Anggota <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <i class="bi bi-person input-icon"></i>
+              <select name="user_id" id="modalUserId" class="form-control" required onchange="handleUserSelectionChange()">
+                <option value="">-- Pilih Anggota Pegawai --</option>
+                <% allUsers.forEach(u => { 
+                     const pVal = parseFloat(u.simpanan_pokok || 0);
+                     const isLunas = pVal >= 1005000;
+                %>
+                  <option value="<%= u.id %>" data-pokok="<%= pVal %>" data-lunas="<%= isLunas ? '1' : '0' %>" data-cicilan="<%= u.nominal_cicilan_pokok || '' %>" data-tenor="<%= u.tenor_simpanan_pokok || 12 %>">
+                    <%= u.nama %> (NIP: <%= u.nip %>)<%= isLunas ? ' — [Pokok LUNAS]' : '' %>
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+            <div id="pokokStatusAlert" style="display:none; margin-top: 8px; font-size: 12px; padding: 8px 12px; border-radius: 6px;"></div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Jenis Simpanan <span class="required">*</span></label>
+              <select name="jenis_simpanan" id="modalJenisSimpanan" class="form-control" required>
+                <option value="pokok" id="optJenisPokok">a. Simpanan Pokok</option>
+                <option value="wajib" selected>b. Simpanan Wajib</option>
+                <option value="sukarela">c. Simpanan Sukarela</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tipe Transaksi <span class="required">*</span></label>
+              <select name="tipe_transaksi" id="modalTipeTransaksi" class="form-control" required>
+                <option value="setor">🟢 Setoran (+)</option>
+                <option value="tarik">🔴 Penarikan (-)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Nominal (Rp) <span class="required">*</span></label>
+              <div class="input-wrapper">
+                <i class="bi bi-cash input-icon"></i>
+                <input 
+                  type="text" 
+                  inputmode="numeric"
+                  name="nominal" 
+                  id="modalNominal" 
+                  class="form-control input-rupiah" 
+                  placeholder="Contoh: 100.000" 
+                  required 
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tanggal Transaksi <span class="required">*</span></label>
+              <input 
+                type="date" 
+                name="tanggal" 
+                id="modalTanggal" 
+                class="form-control" 
+                value="<%= new Date().toISOString().slice(0,10) %>" 
+                required 
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Keterangan / Catatan</label>
+            <input 
+              type="text" 
+              name="keterangan" 
+              id="modalKeterangan" 
+              class="form-control" 
+              placeholder="Contoh: Setoran Simpanan Wajib Bulan Ini" 
+            />
+          </div>
+
+          <div class="d-flex justify-end gap-2 mt-4 pt-3 border-top">
+            <button type="button" class="btn-secondary" onclick="closeModalTransaksi()">Batal</button>
+            <button type="submit" class="btn-primary">
+              <i class="bi bi-save"></i> Simpan Transaksi
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function formatRupiahJS(val) {
+  return 'Rp ' + Math.round(val).toLocaleString('id-ID');
+}
+
+function handleUserSelectionChange() {
+  const sel = document.getElementById('modalUserId');
+  const alertEl = document.getElementById('pokokStatusAlert');
+  const optPokok = document.getElementById('optJenisPokok');
+  const jenisSel = document.getElementById('modalJenisSimpanan');
+  
+  if (!sel.value) {
+    alertEl.style.display = 'none';
+    optPokok.disabled = false;
+    optPokok.textContent = 'a. Simpanan Pokok';
+    return;
+  }
+
+  const selectedOpt = sel.options[sel.selectedIndex];
+  const isLunas = selectedOpt.getAttribute('data-lunas') === '1';
+  const pokok = parseFloat(selectedOpt.getAttribute('data-pokok') || 0);
+  const targetPokok = 1005000;
+  const sisa = Math.max(0, targetPokok - pokok);
+
+  if (isLunas) {
+    optPokok.disabled = true;
+    optPokok.textContent = 'a. Simpanan Pokok (Sudah Lunas - Maks Rp 1.005.000)';
+    if (jenisSel.value === 'pokok') {
+      jenisSel.value = 'wajib';
+      updateKeterangan(true);
+    }
+    alertEl.style.display = 'block';
+    alertEl.style.background = 'rgba(16, 185, 129, 0.12)';
+    alertEl.style.color = '#34d399';
+    alertEl.style.border = '1px solid rgba(16, 185, 129, 0.25)';
+    alertEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> Simpanan Pokok anggota ini sudah <strong>LUNAS (' + formatRupiahJS(pokok) + ')</strong>. Setoran pokok tidak dapat ditambah lagi.';
+  } else {
+    optPokok.disabled = false;
+    optPokok.textContent = 'a. Simpanan Pokok (Sisa Kewajiban: ' + formatRupiahJS(sisa) + ')';
+    alertEl.style.display = 'block';
+    alertEl.style.background = 'rgba(245, 158, 11, 0.12)';
+    alertEl.style.color = '#fbbf24';
+    alertEl.style.border = '1px solid rgba(245, 158, 11, 0.25)';
+    alertEl.innerHTML = '<i class="bi bi-hourglass-split"></i> Simpanan Pokok belum lunas (Terbayar: ' + formatRupiahJS(pokok) + ' / Rp 1.005.000). Sisa kewajiban: <strong>' + formatRupiahJS(sisa) + '</strong>.';
+  }
+}
+
+function openModalTransaksi() {
+  document.getElementById('modalTransaksi').style.display = 'flex';
+  handleUserSelectionChange();
+  updateKeterangan();
+}
+
+function openModalTransaksiFor(userId, userName) {
+  const sel = document.getElementById('modalUserId');
+  sel.value = userId;
+  handleUserSelectionChange();
+  document.getElementById('modalTransaksi').style.display = 'flex';
+  updateKeterangan();
+}
+
+function closeModalTransaksi() {
+  document.getElementById('modalTransaksi').style.display = 'none';
+}
+
+// Auto update keterangan default saat jenis/tipe simpanan berubah
+document.getElementById('modalJenisSimpanan').addEventListener('change', () => updateKeterangan(true));
+document.getElementById('modalTipeTransaksi').addEventListener('change', () => updateKeterangan(true));
+
+function updateKeterangan(updateNominal = true) {
+  const jenis = document.getElementById('modalJenisSimpanan').value;
+  const tipe  = document.getElementById('modalTipeTransaksi').value;
+  const labelTipe = tipe === 'setor' ? 'Setoran' : 'Penarikan';
+  const labelJenis = jenis === 'pokok' ? 'Simpanan Pokok' : (jenis === 'wajib' ? 'Simpanan Wajib' : 'Simpanan Sukarela');
+  
+  const nomEl = document.getElementById('modalNominal');
+  if (updateNominal) {
+    if (jenis === 'wajib' && tipe === 'setor') {
+      nomEl.value = '100.000';
+      nomEl.dispatchEvent(new Event('input'));
+    } else if (jenis === 'pokok' && tipe === 'setor') {
+      const sel = document.getElementById('modalUserId');
+      if (sel && sel.value) {
+        const selectedOpt = sel.options[sel.selectedIndex];
+        const pokok = parseFloat(selectedOpt.getAttribute('data-pokok') || 0);
+        const cicilan = parseFloat(selectedOpt.getAttribute('data-cicilan') || 0);
+        const sisa = Math.max(0, 1005000 - pokok);
+        if (cicilan > 0 && cicilan < sisa) {
+          nomEl.value = Math.round(cicilan).toLocaleString('id-ID');
+        } else {
+          nomEl.value = Math.round(sisa > 0 ? sisa : 1005000).toLocaleString('id-ID');
+        }
+      } else {
+        nomEl.value = '1.005.000';
+      }
+      nomEl.dispatchEvent(new Event('input'));
+    }
+  }
+
+  document.getElementById('modalKeterangan').value = `${labelTipe} ${labelJenis}`;
+}
+</script>

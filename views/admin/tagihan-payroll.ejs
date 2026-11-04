@@ -1,0 +1,261 @@
+<%
+  currentPath = '/admin/payroll';
+  isAdmin = true;
+  const fmtRp = (v) => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(v||0);
+%>
+
+<% if (success === 'rekonsiliasi_ok') { %>
+  <div class="alert alert-success animate-in"><i class="bi bi-check-circle-fill"></i> Rekonsiliasi berhasil! Status cicilan yang dipilih telah diperbarui.</div>
+<% } else if (error === 'no_selection') { %>
+  <div class="alert alert-warning animate-in"><i class="bi bi-exclamation-triangle"></i> Tidak ada cicilan yang dipilih.</div>
+<% } else if (error === 'server') { %>
+  <div class="alert alert-danger animate-in"><i class="bi bi-x-circle"></i> Terjadi kesalahan server.</div>
+<% } %>
+
+<div class="page-header animate-in">
+  <div>
+    <h1><i class="bi bi-cash-stack"></i> Tagihan Potongan Gaji</h1>
+    <p>Kelola rekonsiliasi dan konfirmasi potongan gaji per periode.</p>
+  </div>
+</div>
+
+<!-- Filter Periode -->
+<div class="card animate-in" style="animation-delay:.1s">
+  <div class="card-body filter-bar">
+    <form action="/admin/payroll" method="GET" class="filter-form">
+      <label class="form-label mb-0">Periode Tagihan:</label>
+      <input type="month" name="periode" value="<%= periode %>" class="form-control form-control-sm" onchange="this.form.submit()"/>
+    </form>
+    <div class="filter-actions">
+      <a href="/admin/payroll/export-excel?periode=<%= periode %>" class="btn-success btn-sm">
+        <i class="bi bi-file-earmark-excel"></i> Ekspor Excel
+      </a>
+      <a href="/admin/payroll/print?periode=<%= periode %>" target="_blank" class="btn-secondary btn-sm">
+        <i class="bi bi-printer"></i> Cetak PDF
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Stats Angsuran Pinjaman -->
+<div class="stats-grid animate-in" style="animation-delay:.15s">
+  <div class="stat-card stat-yellow">
+    <div class="stat-icon"><i class="bi bi-hourglass"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Pinjaman Belum Dipotong</div>
+      <div class="stat-value"><%= tagihan.length %> pegawai</div>
+      <div class="stat-sub"><%= fmtRp(totalTagihan) %></div>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-icon"><i class="bi bi-check2-all"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Pinjaman Sudah Dipotong</div>
+      <div class="stat-value"><%= semua.filter(s => s.status_potong === 'SUDAH_DIPOTONG').length %> pegawai</div>
+      <div class="stat-sub"><%= fmtRp(totalSudahPotong) %></div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue">
+    <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Simpanan Wajib (<%= totalAnggota %> Pegawai)</div>
+      <div class="stat-value"><%= fmtRp(totalSimpananWajib) %></div>
+      <div class="stat-sub">@ Rp 100.000 / bulan</div>
+    </div>
+  </div>
+  <div class="stat-card stat-purple">
+    <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Cicilan Simpanan Pokok</div>
+      <div class="stat-value"><%= fmtRp(totalCicilanPokok) %></div>
+      <div class="stat-sub">Maks 12 Bulan (Total 1jt 5rb)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Banner Total Estimasi Potongan Gaji Koperasi Keseluruhan -->
+<div class="card mb-4 animate-in" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(59, 130, 246, 0.25);">
+  <div class="card-body p-3 d-flex justify-between align-center flex-wrap gap-2">
+    <div class="d-flex align-center gap-2">
+      <i class="bi bi-cash-coin text-primary" style="font-size: 1.5rem;"></i>
+      <div>
+        <strong style="color: #f1f5f9; font-size: 0.95rem;">Total Rekap Potongan Gaji Koperasi Periode <%= periode %></strong>
+        <div class="text-muted" style="font-size: 0.8rem;">
+          Gabungan Angsuran Pinjaman (<%= fmtRp(totalTagihan + totalSudahPotong) %>) + Simpanan Wajib (<%= fmtRp(totalSimpananWajib) %>) + Cicilan Pokok (<%= fmtRp(totalCicilanPokok) %>)
+        </div>
+      </div>
+    </div>
+    <div class="text-right">
+      <span class="badge badge-info" style="font-size: 1rem; padding: 6px 14px; font-family: monospace;">
+        Grand Total: <%= fmtRp(grandTotalPayroll) %>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- Checklist Rekonsiliasi (Belum Dipotong) -->
+<% if (tagihan.length > 0) { %>
+<div class="card animate-in" style="animation-delay:.2s">
+  <div class="card-header">
+    <h3><i class="bi bi-ui-checks"></i> Checklist Pelunasan — Belum Dipotong (<%= tagihan.length %>)</h3>
+  </div>
+  <div class="card-body">
+    <form action="/admin/payroll/konfirmasi" method="POST" id="formRekonsiliasi">
+      <input type="hidden" name="periode" value="<%= periode %>"/>
+
+      <div class="bulk-actions mb-3">
+        <button type="button" class="btn-secondary btn-sm" onclick="selectAll()">
+          <i class="bi bi-check-all"></i> Pilih Semua
+        </button>
+        <button type="button" class="btn-ghost btn-sm" onclick="deselectAll()">
+          <i class="bi bi-x"></i> Batal Semua
+        </button>
+        <span class="text-muted" id="selectedCount">0 dipilih</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table" id="tableTagihan">
+          <thead>
+            <tr>
+              <th class="text-center">
+                <input type="checkbox" id="masterCheck" onchange="toggleAll(this)"/>
+              </th>
+              <th>NIP</th>
+              <th>Nama Pegawai</th>
+              <th>Jabatan</th>
+              <th>Bulan ke</th>
+              <th>Pokok (Rp)</th>
+              <th>Bunga (Rp)</th>
+              <th class="text-right">Total Potongan (Rp)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% tagihan.forEach(t => { %>
+              <tr class="tagihan-row" data-id="<%= t.id %>">
+                <td class="text-center">
+                  <input
+                    type="checkbox"
+                    name="cicilan_ids"
+                    value="<%= t.id %>"
+                    class="cicilan-check"
+                    onchange="updateCount()"
+                  />
+                </td>
+                <td><code><%= t.nip %></code></td>
+                <td><strong><%= t.nama %></strong></td>
+                <td><small><%= t.jabatan %></small></td>
+                <td class="text-center"><%= t.bulan_ke %></td>
+                <td class="text-right"><%= fmtRp(t.pokok_angsuran) %></td>
+                <td class="text-right"><%= fmtRp(t.bunga_angsuran) %></td>
+                <td class="text-right fw-700 text-blue"><%= fmtRp(t.total_angsuran) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+          <tfoot>
+            <tr class="table-total">
+              <td colspan="7" class="text-right fw-700">TOTAL TAGIHAN BELUM DIPOTONG:</td>
+              <td class="text-right fw-700 text-amber"><%= fmtRp(totalTagihan) %></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="action-row mt-4">
+        <button type="submit" class="btn-primary" id="btnKonfirmasi" onclick="return confirmSubmit()">
+          <i class="bi bi-check2-all"></i> Konfirmasi Pelunasan
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<% } else { %>
+  <div class="card animate-in" style="animation-delay:.2s">
+    <div class="card-body">
+      <div class="empty-state">
+        <i class="bi bi-check-circle text-green"></i>
+        <p>Semua tagihan untuk periode <strong><%= periode %></strong> sudah dipotong! 🎉</p>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<!-- Semua Tagihan (sudah & belum) -->
+<% if (semua.length > 0) { %>
+<div class="card animate-in" style="animation-delay:.3s">
+  <div class="card-header">
+    <h3><i class="bi bi-list-ul"></i> Rekap Semua Tagihan Periode <%= periode %></h3>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>NIP</th>
+            <th>Nama</th>
+            <th>Bln ke</th>
+            <th>Pokok (Rp)</th>
+            <th>Bunga (Rp)</th>
+            <th>Total (Rp)</th>
+            <th>Status</th>
+            <th>Tgl Potong</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% semua.forEach(t => { %>
+            <tr class="<%= t.status_potong === 'SUDAH_DIPOTONG' ? 'row-paid' : '' %>">
+              <td><code><%= t.nip %></code></td>
+              <td><%= t.nama %></td>
+              <td class="text-center"><%= t.bulan_ke %></td>
+              <td class="text-right"><%= fmtRp(t.pokok_angsuran) %></td>
+              <td class="text-right"><%= fmtRp(t.bunga_angsuran) %></td>
+              <td class="text-right fw-600"><%= fmtRp(t.total_angsuran) %></td>
+              <td>
+                <% if (t.status_potong === 'SUDAH_DIPOTONG') { %>
+                  <span class="badge badge-green"><i class="bi bi-check2"></i> Sudah</span>
+                <% } else { %>
+                  <span class="badge badge-yellow"><i class="bi bi-clock"></i> Belum</span>
+                <% } %>
+              </td>
+              <td><small><%= t.tanggal_potong ? new Date(t.tanggal_potong).toLocaleDateString('id-ID') : '-' %></small></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script>
+  function toggleAll(master) {
+    document.querySelectorAll('.cicilan-check').forEach(cb => cb.checked = master.checked);
+    updateCount();
+  }
+
+  function selectAll() {
+    document.querySelectorAll('.cicilan-check').forEach(cb => cb.checked = true);
+    document.getElementById('masterCheck').checked = true;
+    updateCount();
+  }
+
+  function deselectAll() {
+    document.querySelectorAll('.cicilan-check').forEach(cb => cb.checked = false);
+    document.getElementById('masterCheck').checked = false;
+    updateCount();
+  }
+
+  function updateCount() {
+    const checked = document.querySelectorAll('.cicilan-check:checked').length;
+    document.getElementById('selectedCount').textContent = checked + ' dipilih';
+    // Highlight selected rows
+    document.querySelectorAll('.cicilan-check').forEach(cb => {
+      cb.closest('tr').classList.toggle('row-selected', cb.checked);
+    });
+  }
+
+  function confirmSubmit() {
+    const checked = document.querySelectorAll('.cicilan-check:checked').length;
+    if (checked === 0) { alert('Pilih minimal satu cicilan untuk dikonfirmasi.'); return false; }
+    return confirm(`Konfirmasi ${checked} cicilan sebagai sudah dipotong dari gaji?`);
+  }
+</script>

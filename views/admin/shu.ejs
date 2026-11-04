@@ -1,0 +1,183 @@
+<%
+  currentPath = '/admin/shu';
+  isAdmin = true;
+  const fmtRp = (v) => 'Rp ' + Number(v || 0).toLocaleString('id-ID');
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-pie-chart-fill"></i> Modul SHU (Sisa Hasil Usaha) Otomatis</h1>
+    <p>Perhitungan dan alokasi pembagian SHU tahunan anggota berdasarkan Jasa Modal (Simpanan) & Jasa Usaha (Pinjaman)</p>
+  </div>
+  <div class="page-header-actions d-flex gap-2">
+    <a href="/admin/shu/export-excel?tahun=<%= tahun %>&total_shu=<%= totalSHUDibagikan %>" class="btn-secondary" title="Export Excel">
+      <i class="bi bi-file-earmark-excel-fill text-success"></i> Export Excel
+    </a>
+    <a href="/admin/shu/print?tahun=<%= tahun %>&total_shu=<%= totalSHUDibagikan %>" target="_blank" class="btn-primary" title="Cetak Rekap untuk RAT">
+      <i class="bi bi-printer-fill"></i> Cetak Dokumen RAT
+    </a>
+  </div>
+</div>
+
+<!-- Form Parameter SHU -->
+<div class="card animate-in mb-4">
+  <div class="card-header d-flex justify-between align-center">
+    <h3><i class="bi bi-sliders"></i> Pengaturan Parameter Perhitungan SHU</h3>
+    <span class="badge badge-info">Tahun Buku: <%= tahun %></span>
+  </div>
+  <div class="card-body">
+    <form action="/admin/shu" method="GET" class="form-grid-4">
+      <div class="form-group mb-0">
+        <label class="form-label">Tahun Buku</label>
+        <div class="input-wrapper">
+          <i class="bi bi-calendar3 input-icon"></i>
+          <select name="tahun" class="form-control" onchange="this.form.submit()">
+            <% for(let y = new Date().getFullYear(); y >= 2023; y--) { %>
+              <option value="<%= y %>" <%= y === tahun ? 'selected' : '' %>>Tahun <%= y %></option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group mb-0">
+        <label class="form-label">Total SHU Dibagikan (Rp)</label>
+        <div class="input-wrapper">
+          <i class="bi bi-cash-stack input-icon"></i>
+          <input type="text" inputmode="numeric" name="total_shu" class="form-control input-rupiah" value="<%= totalSHUDibagikan %>" placeholder="Contoh: 45.000.000" />
+        </div>
+      </div>
+
+      <div class="form-group mb-0">
+        <label class="form-label">Alokasi Jasa Modal (%)</label>
+        <div class="input-wrapper">
+          <i class="bi bi-percent input-icon"></i>
+          <input type="number" name="pct_modal" class="form-control" value="<%= pctJasaModal %>" min="10" max="80" />
+        </div>
+      </div>
+
+      <div class="form-group mb-0 d-flex align-end gap-2">
+        <div class="flex-1">
+          <label class="form-label">Alokasi Jasa Usaha (%)</label>
+          <div class="input-wrapper">
+            <i class="bi bi-percent input-icon"></i>
+            <input type="number" name="pct_pinjam" class="form-control" value="<%= pctJasaPinjam %>" min="10" max="80" />
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" style="height:42px; margin-top:24px;">
+          <i class="bi bi-arrow-repeat"></i> Hitung
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Alokasi Dana SHU Cards -->
+<div class="stats-grid animate-in mb-4">
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa;">
+      <i class="bi bi-wallet2"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Total SHU Siap Bagi</div>
+      <div class="stat-value" style="color:#93c5fd;"><%= fmtRp(totalSHUDibagikan) %></div>
+      <small class="text-muted">Dari estimasi surplus hasil usaha</small>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#34d399;">
+      <i class="bi bi-piggy-bank"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Jasa Modal / Simpanan (<%= pctJasaModal %>%)</div>
+      <div class="stat-value" style="color:#6ee7b7;"><%= fmtRp(nominalJasaModal) %></div>
+      <small class="text-muted">Proporsional saldo simpanan</small>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:#fbbf24;">
+      <i class="bi bi-cash-coin"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Jasa Usaha / Pinjaman (<%= pctJasaPinjam %>%)</div>
+      <div class="stat-value" style="color:#fde68a;"><%= fmtRp(nominalJasaPinjam) %></div>
+      <small class="text-muted">Proporsional transaksi pinjaman</small>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background:rgba(139,92,246,0.15);color:#a78bfa;">
+      <i class="bi bi-shield-lock"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Cadangan & Pengurus (<%= pctCadangan + pctPengurus %>%)</div>
+      <div class="stat-value" style="color:#c4b5fd;"><%= fmtRp(nominalCadangan + nominalPengurus) %></div>
+      <small class="text-muted">Cadangan 20% + Pengurus 10%</small>
+    </div>
+  </div>
+</div>
+
+<!-- Tabel Rincian SHU per Anggota -->
+<div class="card animate-in">
+  <div class="card-header d-flex justify-between align-center">
+    <h3><i class="bi bi-people-fill"></i> Daftar Hak Pembagian SHU Anggota (<%= daftarSHU.length %> Pegawai)</h3>
+    <span class="badge badge-success">Total Dibagikan: <%= fmtRp(totalSHUDibagikanAnggota) %></span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="40">No</th>
+            <th>Nama Anggota</th>
+            <th>NIP</th>
+            <th>Unit Kerja</th>
+            <th class="text-right">Total Simpanan</th>
+            <th class="text-center">Rasio Modal</th>
+            <th class="text-right">SHU Jasa Modal</th>
+            <th class="text-right">SHU Jasa Usaha</th>
+            <th class="text-right" style="color:#6ee7b7;">Total SHU Diterima</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (daftarSHU.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">Belum ada data anggota untuk pembagian SHU.</td>
+            </tr>
+          <% } else { %>
+            <% daftarSHU.forEach((d, idx) => { %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td>
+                  <strong><%= d.nama %></strong>
+                </td>
+                <td><code><%= d.nip %></code></td>
+                <td><%= d.unit_kerja || 'Kanreg V BKN' %></td>
+                <td class="text-right font-mono"><%= fmtRp(d.total_simpanan) %></td>
+                <td class="text-center">
+                  <span class="badge badge-info" style="font-size:11px;"><%= d.rasio_modal %>%</span>
+                </td>
+                <td class="text-right font-mono text-muted"><%= fmtRp(d.shu_jasa_modal) %></td>
+                <td class="text-right font-mono text-muted"><%= fmtRp(d.shu_jasa_pinjam) %></td>
+                <td class="text-right font-mono font-bold" style="color:#34d399; font-size:14px;">
+                  <%= fmtRp(d.total_shu) %>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+        <tfoot>
+          <tr style="background: rgba(255,255,255,0.04); font-weight: bold;">
+            <td colspan="4" class="text-center">TOTAL KESELURUHAN</td>
+            <td class="text-right font-mono"><%= fmtRp(totalSimpananKoperasi) %></td>
+            <td class="text-center">100%</td>
+            <td class="text-right font-mono"><%= fmtRp(nominalJasaModal) %></td>
+            <td class="text-right font-mono"><%= fmtRp(nominalJasaPinjam) %></td>
+            <td class="text-right font-mono" style="color:#34d399; font-size:15px;"><%= fmtRp(totalSHUDibagikanAnggota) %></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

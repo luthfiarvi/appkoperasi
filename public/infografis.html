@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Harian Pengembangan Sistem Koperasi BKN - Kanreg V Jakarta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b1120;
+    }
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+      }
+      .no-print-shadow {
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .print-border {
+        border: 1px solid #cbd5e1 !important;
+      }
+    }
+  </style>
+</head>
+<body class="p-3 md:p-6 flex justify-center items-center min-h-screen text-slate-800">
+
+  <!-- CARD UTAMA INFOGRAFIS SATU HALAMAN A4 -->
+  <div class="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200/90 no-print-shadow print-border">
+
+    <!-- HEADER RESMI INSTANSI -->
+    <header class="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 text-white p-6 relative border-b-4 border-amber-400">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-5">
+        
+        <!-- Identitas Instansi & Logo BKN -->
+        <div class="flex items-center gap-5">
+          <div class="bg-white p-2.5 rounded-2xl shadow-md w-20 h-24 flex items-center justify-center shrink-0 border border-slate-100">
+            <img src="Logo_Badan_Kepegawaian_Negara.png" onerror="this.onerror=null; this.src='/images/logo-bkn.png';" alt="Logo Badan Kepegawaian Negara" class="max-h-full max-w-full object-contain">
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span class="bg-amber-400 text-slate-950 text-[10px] font-extrabold tracking-widest uppercase px-3 py-0.5 rounded-full shadow-sm">
+                MAGANGHUB KEMNAKER
+              </span>
+              <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold tracking-widest uppercase px-3 py-0.5 rounded-full border border-emerald-400/30">
+                KOPERASI KANREG V BKN
+              </span>
+            </div>
+            <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-white leading-snug">
+              LAPORAN PENGEMBANGAN SISTEM KOPERASI PEGAWAI
+            </h1>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Tata Kelola Simpanan, Fasilitas Top-Up Pinjaman & Manajemen Risiko DSR • Selasa, 27 Oktober 2026
+            </p>
+          </div>
+        </div>
+
+        <!-- Profil Tim Sidigi & Koperasi -->
+        <div class="bg-white/5 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 text-center md:text-right shrink-0">
+          <div class="text-[10px] font-bold text-amber-300 uppercase tracking-wider">Identitas Pengembang:</div>
+          <div class="text-sm font-extrabold text-white mt-0.5">Luthfi Arviandi</div>
+          <div class="text-[11px] text-emerald-200">Asisten Pengembang Sistem dan Aplikasi Digital</div>
+          <div class="text-[11px] text-slate-300 mt-1">
+            <span class="text-amber-300 font-semibold">Mentor:</span> Wijaya Kusuma
+          </div>
+          <div class="inline-flex items-center gap-1.5 mt-2 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/30 text-emerald-300 text-[10px] font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Modul Finansial Aktif
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- CONTENT BODY -->
+    <main class="p-6 md:p-7 space-y-5">
+
+      <!-- 5 HIGHLIGHT ANGKA KUNCI KEBIJAKAN BARU -->
+      <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div class="bg-gradient-to-br from-slate-50 to-emerald-50/60 border border-slate-200 rounded-2xl p-3 text-center shadow-sm">
+          <div class="w-7 h-7 mx-auto bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center text-xs mb-1 font-bold">
+            <i class="fa-solid fa-piggy-bank"></i>
+          </div>
+          <div class="text-sm md:text-base font-extrabold text-slate-900">Rp 1.005.000</div>
+          <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Simpanan Pokok</div>
+          <div class="text-[9px] text-emerald-700 font-semibold mt-0.5">Cicil s.d 12 bln</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 to-sky-50/60 border border-slate-200 rounded-2xl p-3 text-center shadow-sm">
+          <div class="w-7 h-7 mx-auto bg-sky-100 text-sky-700 rounded-lg flex items-center justify-center text-xs mb-1 font-bold">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+          <div class="text-sm md:text-base font-extrabold text-slate-900">Rp 100.000</div>
+          <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Simpanan Wajib</div>
+          <div class="text-[9px] text-sky-700 font-semibold mt-0.5">Rutin / Bln Payroll</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 to-indigo-50/60 border border-slate-200 rounded-2xl p-3 text-center shadow-sm">
+          <div class="w-7 h-7 mx-auto bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center text-xs mb-1 font-bold">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div class="text-sm md:text-base font-extrabold text-slate-900">36 Bulan</div>
+          <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Maksimal Tenor</div>
+          <div class="text-[9px] text-indigo-700 font-semibold mt-0.5">Fleksibel s.d 3 Thn</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 to-amber-50/60 border border-slate-200 rounded-2xl p-3 text-center shadow-sm">
+          <div class="w-7 h-7 mx-auto bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center text-xs mb-1 font-bold">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <div class="text-sm md:text-base font-extrabold text-slate-900">1% Fix</div>
+          <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Biaya Admin</div>
+          <div class="text-[9px] text-amber-700 font-semibold mt-0.5">Potong Plafon Baru</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 to-rose-50/60 border border-slate-200 rounded-2xl p-3 text-center shadow-sm col-span-2 sm:col-span-1 md:col-span-1">
+          <div class="w-7 h-7 mx-auto bg-rose-100 text-rose-700 rounded-lg flex items-center justify-center text-xs mb-1 font-bold">
+            <i class="fa-solid fa-shield-virus"></i>
+          </div>
+          <div class="text-sm md:text-base font-extrabold text-rose-700">Maks. 50%</div>
+          <div class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Batas Rasio DSR</div>
+          <div class="text-[9px] text-rose-700 font-semibold mt-0.5">Proteksi Gaji Bersih</div>
+        </div>
+      </section>
+
+      <!-- 4 PILAR REKAYASA SISTEM & KEBIJAKAN -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Pilar 1 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between hover:border-emerald-300 transition shadow-sm">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow">
+                01
+              </span>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Fasilitas Top-Up Pinjaman (Refinancing Terpadu)
+              </h3>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed text-justify">
+              Menghilangkan kebijakan pemblokiran pengajuan bagi pegawai yang masih memiliki pinjaman aktif melalui implementasi alur <b>Top-Up</b>. Sistem secara otomatis menutup dan menandai lunas sisa pokok lama saat pinjaman baru disahkan, sehingga anggota menerima pencairan dana segar bersih tanpa terbebani cicilan ganda.
+            </p>
+            <div class="mt-2.5 p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-[10px] text-emerald-950 font-mono text-center">
+              <b>Dana Bersih</b> = Plafon Baru − Admin (1%) − Sisa Pokok Lama
+            </div>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
+            <span class="font-semibold text-emerald-800"><i class="fa-solid fa-arrows-rotate me-1"></i> Auto-Close Loan</span>
+            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">Bebas Dobel Cicilan</span>
+          </div>
+        </div>
+
+        <!-- Pilar 2 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between hover:border-sky-300 transition shadow-sm">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-8 h-8 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow">
+                02
+              </span>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Manajemen Risiko DSR (Debt Service Ratio) Real-Time
+              </h3>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed text-justify">
+              Mengembangkan modul validasi otomatis terhadap rasio cicilan dibanding gaji bersih pegawai. Mengklasifikasikan risiko ke dalam 3 tier: <b>🟢 Aman (≤40%)</b>, <b>🟡 Waspada (41-50%)</b>, dan <b>🔴 Peringatan Keras (&gt;50%)</b> yang mengunci tombol formulir demi mencegah risiko gagal bayar serta merekomendasikan opsi perpanjangan tenor.
+            </p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
+            <span class="font-semibold text-sky-800"><i class="fa-solid fa-gauge-high me-1"></i> Real-time Ratio Engine</span>
+            <span class="bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-bold">Lock Guard Active</span>
+          </div>
+        </div>
+
+        <!-- Pilar 3 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between hover:border-indigo-300 transition shadow-sm">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow">
+                03
+              </span>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Penguncian Otomatis Simpanan Pokok Lunas
+              </h3>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed text-justify">
+              Menetapkan batasan plafon simpanan pokok mutlak sebesar Rp 1.005.000. Saat akumulasi setoran anggota telah mencukupi, opsi input simpanan pokok pada formulir transaksi admin otomatis dinonaktifkan (<i>disabled</i>) dengan badge hijau <b>LUNAS</b> serta proteksi kueri backend yang menolak kelebihan setoran.
+            </p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
+            <span class="font-semibold text-indigo-800"><i class="fa-solid fa-lock me-1"></i> Data Integrity Lock</span>
+            <span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold">Anti Over-Deposit</span>
+          </div>
+        </div>
+
+        <!-- Pilar 4 -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-300 transition shadow-sm">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow">
+                04
+              </span>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Akurasi Akuntansi & Integrasi Form Simulasi
+              </h3>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-relaxed text-justify">
+              Memperbaiki formula kalkulasi piutang aktif dengan mengeliminasi bug duplikasi sisa pokok sehingga neraca pinjaman 100% akurat. Menghubungkan tombol aksi <i>"Ajukan Pinjaman Ini"</i> pada laman simulasi mandiri agar otomatis mengikat (<i>auto-bind</i>) nominal dan tenor ke formulir permohonan resmi.
+            </p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-500">
+            <span class="font-semibold text-amber-800"><i class="fa-solid fa-calculator me-1"></i> Auto-Bind Simulation</span>
+            <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold">100% Presisi Piutang</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- DIAGRAM ALUR PROSES TOP-UP PINJAMAN -->
+      <section class="bg-slate-950 text-white rounded-2xl p-4 border border-slate-800 shadow-md">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+            <i class="fa-solid fa-diagram-project text-emerald-400"></i>
+            Diagram Alur Transaksi Top-Up Pinjaman (Refinancing Workflow)
+          </h4>
+          <span class="text-[10px] bg-slate-800 text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full border border-slate-700">
+            Zero Double Installment
+          </span>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 text-center text-[10px]">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-2.5 flex flex-col justify-between">
+            <div>
+              <span class="text-amber-400 font-bold block mb-1">Tahap 1: Deteksi Pinjaman</span>
+              <p class="text-slate-300">Pegawai membuka form/simulasi; sistem mendeteksi sisa pokok aktif secara instan.</p>
+            </div>
+            <div class="mt-2 text-emerald-400 font-semibold"><i class="fa-solid fa-arrow-right"></i> Auto-Fetch DB</div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 rounded-xl p-2.5 flex flex-col justify-between">
+            <div>
+              <span class="text-sky-400 font-bold block mb-1">Tahap 2: Uji Kelayakan DSR</span>
+              <p class="text-slate-300">Input plafon & tenor baru; sistem menguji cicilan terhadap batas 50% gaji bersih.</p>
+            </div>
+            <div class="mt-2 text-sky-400 font-semibold"><i class="fa-solid fa-arrow-right"></i> DSR Validation</div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 rounded-xl p-2.5 flex flex-col justify-between">
+            <div>
+              <span class="text-indigo-400 font-bold block mb-1">Tahap 3: Verifikasi Admin</span>
+              <p class="text-slate-300">Pengurus menerima notifikasi pengajuan bertanda badge khusus "TOP-UP".</p>
+            </div>
+            <div class="mt-2 text-indigo-400 font-semibold"><i class="fa-solid fa-arrow-right"></i> Operator Review</div>
+          </div>
+
+          <div class="bg-white/5 border border-white/10 rounded-xl p-2.5 flex flex-col justify-between">
+            <div>
+              <span class="text-emerald-400 font-bold block mb-1">Tahap 4: Eksekusi Otomatis</span>
+              <p class="text-slate-300">Pinjaman lama ditutup lunas, admin 1% terpotong, dan jadwal baru langsung terbit.</p>
+            </div>
+            <div class="mt-2 text-emerald-400 font-semibold"><i class="fa-solid fa-check"></i> Pencairan Bersih</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFIKASI INFORMASI DOKUMENTASI VISUAL -->
+      <section class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white rounded-2xl p-4 shadow-sm flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">
+            <i class="fa-solid fa-images"></i>
+          </div>
+          <div>
+            <h4 class="text-xs md:text-sm font-extrabold uppercase tracking-wide">
+              Dokumentasi & Bukti Visual Pelaksanaan Kegiatan
+            </h4>
+            <p class="text-[11px] text-teal-100 mt-0.5">
+              Bukti visual tangkapan layar form pengajuan Top-Up, indikator DSR 3-warna, status lunas simpanan pokok, dan pengujian formula kalkulasi dilampirkan lengkap pada halaman berikutnya.
+            </p>
+          </div>
+        </div>
+        <div class="hidden sm:flex items-center gap-2 bg-white text-slate-900 px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 shadow">
+          <span>Halaman Selanjutnya</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER RESMI -->
+    <footer class="bg-slate-950 text-slate-400 text-[10px] px-6 py-3.5 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Koperasi Pegawai Kantor Regional V Badan Kepegawaian Negara © 2026</span>
+      </div>
+      <span class="text-slate-400 font-medium">Program MagangHub Kemnaker — Tim Pengembang Sistem TI</span>
+    </footer>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+<%
+  currentPath = '/admin/pengajuan';
+  isAdmin = true;
+%>
+
+<div class="page-header animate-in">
+  <h1><i class="bi bi-file-earmark-check"></i> Daftar Pengajuan Pinjaman</h1>
+</div>
+
+<!-- Filter -->
+<div class="card animate-in" style="animation-delay:.1s">
+  <div class="card-body filter-bar">
+    <form action="/admin/pengajuan" method="GET" class="filter-form">
+      <label class="form-label mb-0">Filter Status:</label>
+      <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+        <option value="">Semua Status</option>
+        <option value="PENDING"   <%= filterStatus === 'PENDING'   ? 'selected' : '' %>>Pending</option>
+        <option value="APPROVED"  <%= filterStatus === 'APPROVED'  ? 'selected' : '' %>>Disetujui</option>
+        <option value="REJECTED"  <%= filterStatus === 'REJECTED'  ? 'selected' : '' %>>Ditolak</option>
+        <option value="LUNAS"     <%= filterStatus === 'LUNAS'     ? 'selected' : '' %>>Lunas</option>
+      </select>
+    </form>
+    <span class="text-muted"><%= list.length %> data ditemukan</span>
+  </div>
+</div>
+
+<div class="card animate-in" style="animation-delay:.2s">
+  <div class="card-body">
+    <% if (list.length === 0) { %>
+      <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Tidak ada data pengajuan.</p>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table" id="tablePengajuan">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Pegawai</th>
+              <th>NIP</th>
+              <th>Nominal</th>
+              <th>Tenor</th>
+              <th>Keperluan</th>
+              <th>Status</th>
+              <th>Tanggal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% list.forEach((p, idx) => { %>
+              <tr>
+                <td class="text-center"><%= idx + 1 %></td>
+                <td>
+                  <strong><%= p.nama %></strong><br/>
+                  <small class="text-muted"><%= p.jabatan %></small>
+                </td>
+                <td><code><%= p.nip %></code></td>
+                <td class="text-right">
+                  <%= formatRp(p.nominal_pengajuan) %>
+                  <% if (p.is_topup) { %>
+                    <br/><span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); font-size:10px; padding:2px 6px;">
+                      <i class="bi bi-arrow-repeat"></i> TOP-UP
+                    </span>
+                  <% } %>
+                </td>
+                <td class="text-center"><%= p.tenor_bulan %> bln</td>
+                <td><small><%= p.keperluan || '-' %></small></td>
+                <td>
+                  <% if (p.status === 'PENDING') { %>
+                    <span class="badge badge-yellow">⏳ Pending</span>
+                  <% } else if (p.status === 'APPROVED') { %>
+                    <span class="badge badge-blue">✅ Disetujui</span>
+                  <% } else if (p.status === 'LUNAS') { %>
+                    <span class="badge badge-green">🏆 Lunas</span>
+                  <% } else { %>
+                    <span class="badge badge-red">❌ Ditolak</span>
+                  <% } %>
+                </td>
+                <td><small><%= new Date(p.created_at).toLocaleDateString('id-ID') %></small></td>
+                <td>
+                  <a href="/admin/pengajuan/<%= p.id %>" class="btn-primary btn-sm">
+                    <i class="bi bi-eye"></i> Detail
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %></title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Times New Roman', serif; font-size: 11pt; color: #000; background: #fff; }
+    .kop { text-align: center; border-bottom: 3px double #000; padding-bottom: 8px; margin-bottom: 16px; }
+    .kop h1 { font-size: 13pt; font-weight: bold; text-transform: uppercase; }
+    .kop p { font-size: 10pt; }
+    .judul { text-align: center; margin: 12px 0; }
+    .judul h2 { font-size: 12pt; text-transform: uppercase; font-weight: bold; }
+    .judul p { font-size: 10pt; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #000; padding: 5px 8px; font-size: 10pt; }
+    th { background-color: #e8e8e8; font-weight: bold; text-align: center; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    tfoot tr td { font-weight: bold; }
+    .ttd-section { margin-top: 32px; display: flex; justify-content: space-between; }
+    .ttd-box { text-align: center; width: 200px; }
+    .ttd-line { margin-top: 64px; border-top: 1px solid #000; }
+    @media print {
+      body { margin: 0; }
+      .no-print { display: none !important; }
+    }
+    .no-print { text-align: center; margin: 16px; }
+    .no-print button { padding: 8px 20px; font-size: 12pt; cursor: pointer; margin: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    <button onclick="window.close()">✕ Tutup</button>
+  </div>
+
+  <!-- KOP SURAT -->
+  <div class="kop">
+    <h1>Koperasi Pegawai Badan Kepegawaian Negara</h1>
+    <h1>Kantor Regional V Jakarta</h1>
+    <p>Jl. Letjen. Sutoyo No. 12, Cililitan, Jakarta Timur 13640</p>
+    <p>Telp. (021) 8093008 | Email: koperasi@bkn-kanreg5.go.id</p>
+  </div>
+
+  <!-- Judul -->
+  <div class="judul">
+    <h2>Daftar Potongan Gaji Simpan Pinjam</h2>
+    <p>Periode: <%= periodeLabel %></p>
+    <p>Dicetak Tanggal: <%= tanggalCetak %></p>
+  </div>
+
+  <!-- Tabel -->
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>NIP</th>
+        <th>Nama Pegawai</th>
+        <th>Jabatan</th>
+        <th>Bln ke</th>
+        <th>Angsuran Pokok (Rp)</th>
+        <th>Bunga (Rp)</th>
+        <th>Total Potongan (Rp)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% tagihan.forEach((t, idx) => { %>
+        <tr>
+          <td class="text-center"><%= idx + 1 %></td>
+          <td><%= t.nip %></td>
+          <td><%= t.nama %></td>
+          <td><%= t.jabatan %></td>
+          <td class="text-center"><%= t.bulan_ke %></td>
+          <td class="text-right"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(t.pokok_angsuran) %></td>
+          <td class="text-right"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(t.bunga_angsuran) %></td>
+          <td class="text-right"><strong><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(t.total_angsuran) %></strong></td>
+          <td class="text-center"><%= t.status_potong === 'SUDAH_DIPOTONG' ? '✓ Dipotong' : 'Belum' %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="7" class="text-right">JUMLAH TOTAL</td>
+        <td class="text-right"><%= new Intl.NumberFormat('id-ID',{minimumFractionDigits:0}).format(totalTagihan) %></td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- Tanda Tangan -->
+  <div class="ttd-section">
+    <div class="ttd-box">
+      <p>Mengetahui,</p>
+      <p>Bendahara Gaji</p>
+      <div class="ttd-line"></div>
+      <p>NIP.</p>
+    </div>
+    <div class="ttd-box">
+      <p>Jakarta, <%= tanggalCetak %></p>
+      <p>Ketua Koperasi,</p>
+      <div class="ttd-line"></div>
+      <p>NIP.</p>
+    </div>
+  </div>
+</body>
+</html>

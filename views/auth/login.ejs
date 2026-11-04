@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= title %></title>
+  <meta name="description" content="Login Koperasi Pegawai BKN Kanreg V Jakarta"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <link rel="icon" type="image/png" href="/images/logo-bkn.png"/>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <!-- Left Panel -->
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <div class="auth-brand">
+          <div class="auth-brand-icon"><img src="/images/logo-bkn.png" alt="Logo BKN" class="brand-logo-img"/></div>
+          <h1>Koperasi BKN</h1>
+          <p>Kanreg V Jakarta</p>
+        </div>
+        <div class="auth-tagline">
+          <h2>Simpan Pinjam <br/>Terpercaya & Transparan</h2>
+          <p>Sistem pengelolaan pembiayaan pegawai BKN dengan perhitungan bunga menurun yang adil dan rekap potongan gaji otomatis.</p>
+        </div>
+        <div class="auth-features">
+          <div class="feature-item"><i class="bi bi-shield-check"></i> Keamanan Data Terjamin</div>
+          <div class="feature-item"><i class="bi bi-graph-down-arrow"></i> Bunga Menurun Transparan</div>
+          <div class="feature-item"><i class="bi bi-receipt"></i> Rekap Gaji Otomatis</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Login Form -->
+    <div class="auth-right">
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <h2>Masuk ke Sistem</h2>
+          <p>Gunakan ID Pengguna / NIP dan kata sandi Anda</p>
+        </div>
+
+        <% if (error) { %>
+          <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+          </div>
+        <% } %>
+
+        <form action="/login" method="POST" id="loginForm" novalidate>
+          <div class="form-group">
+            <label for="nip" class="form-label">ID Pengguna / NIP</label>
+            <div class="input-wrapper">
+              <i class="bi bi-person-badge input-icon"></i>
+              <input
+                type="text"
+                id="nip"
+                name="nip"
+                class="form-control"
+                placeholder="Masukkan ID (contoh: admin atau user)"
+                required
+                autocomplete="username"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Kata Sandi</label>
+            <div class="input-wrapper">
+              <i class="bi bi-lock input-icon"></i>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                placeholder="Masukkan kata sandi"
+                required
+                autocomplete="current-password"
+              />
+              <button type="button" class="btn-eye" onclick="togglePassword()" aria-label="Toggle password">
+                <i class="bi bi-eye" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-full" id="btnLogin">
+            <i class="bi bi-box-arrow-in-right"></i> Masuk
+          </button>
+        </form>
+      </div>
+
+      <p class="auth-copyright">© 2026 Koperasi Pegawai BKN Kanreg V Jakarta</p>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon  = document.getElementById('eyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function() {
+      const btn = document.getElementById('btnLogin');
+      btn.innerHTML = '<span class="spinner"></span> Memproses...';
+      btn.disabled = true;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<%
+  currentPath = '/admin/dashboard';
+  isAdmin = true;
+%>
+
+<% const fmtRp = (v) => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(v||0); %>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card stat-yellow animate-in">
+    <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Pengajuan Pending</div>
+      <div class="stat-value"><%= statusMap.PENDING || 0 %></div>
+    </div>
+  </div>
+  <div class="stat-card stat-blue animate-in" style="animation-delay:.1s">
+    <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Pinjaman Aktif</div>
+      <div class="stat-value"><%= statusMap.APPROVED || 0 %></div>
+    </div>
+  </div>
+  <div class="stat-card stat-green animate-in" style="animation-delay:.2s">
+    <div class="stat-icon"><i class="bi bi-award"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Sudah Lunas</div>
+      <div class="stat-value"><%= statusMap.LUNAS || 0 %></div>
+    </div>
+  </div>
+  <div class="stat-card stat-red animate-in" style="animation-delay:.3s">
+    <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Ditolak</div>
+      <div class="stat-value"><%= statusMap.REJECTED || 0 %></div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-grid mt-3">
+  <div class="stat-card stat-purple animate-in" style="animation-delay:.4s; grid-column: span 2;">
+    <div class="stat-icon"><i class="bi bi-bank"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Total Dana Tersalurkan</div>
+      <div class="stat-value"><%= fmtRp(totalDana) %></div>
+    </div>
+  </div>
+  <div class="stat-card stat-teal animate-in" style="animation-delay:.5s; grid-column: span 2;">
+    <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+    <div class="stat-body">
+      <div class="stat-label">Penerimaan Angsuran Bulan Ini</div>
+      <div class="stat-value"><%= fmtRp(totalAngsuranBulan) %></div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions animate-in" style="animation-delay:.5s">
+  <a href="/admin/pengajuan?status=PENDING" class="quick-action-card">
+    <i class="bi bi-file-earmark-check"></i>
+    <span>Review Pengajuan</span>
+    <% if ((statusMap.PENDING || 0) > 0) { %>
+      <span class="badge-count"><%= statusMap.PENDING %></span>
+    <% } %>
+  </a>
+  <a href="/admin/payroll" class="quick-action-card">
+    <i class="bi bi-cash-stack"></i>
+    <span>Tagihan Gaji</span>
+  </a>
+  <a href="/admin/pengajuan" class="quick-action-card">
+    <i class="bi bi-list-ul"></i>
+    <span>Semua Pengajuan</span>
+  </a>
+</div>
+
+<!-- Pengajuan Pending -->
+<% if (pengajuanPending.length > 0) { %>
+<div class="card animate-in" style="animation-delay:.6s">
+  <div class="card-header">
+    <h3><i class="bi bi-bell"></i> Pengajuan Menunggu Persetujuan</h3>
+    <span class="badge badge-yellow"><%= pengajuanPending.length %> Pending</span>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pegawai</th>
+            <th>NIP</th>
+            <th>Nominal</th>
+            <th>Tenor</th>
+            <th>Tanggal Ajuan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% pengajuanPending.forEach(p => { %>
+            <tr>
+              <td><strong><%= p.nama %></strong><br/><small class="text-muted"><%= p.jabatan %></small></td>
+              <td><code><%= p.nip %></code></td>
+              <td class="text-right"><%= fmtRp(p.nominal_pengajuan) %></td>
+              <td class="text-center"><%= p.tenor_bulan %> bln</td>
+              <td><%= new Date(p.created_at).toLocaleDateString('id-ID') %></td>
+              <td>
+                <a href="/admin/pengajuan/<%= p.id %>" class="btn-primary btn-sm">
+                  <i class="bi bi-eye"></i> Review
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<!-- Recent Pengajuan -->
+<div class="card animate-in" style="animation-delay:.7s">
+  <div class="card-header">
+    <h3><i class="bi bi-clock-history"></i> 10 Pengajuan Terbaru</h3>
+    <a href="/admin/pengajuan" class="btn-secondary btn-sm">Lihat Semua</a>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nama Pegawai</th>
+            <th>Nominal</th>
+            <th>Tenor</th>
+            <th>Status</th>
+            <th>Tanggal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentPengajuan.forEach(p => { %>
+            <tr>
+              <td><strong><%= p.nama %></strong></td>
+              <td class="text-right"><%= fmtRp(p.nominal_pengajuan) %></td>
+              <td class="text-center"><%= p.tenor_bulan %> bln</td>
+              <td>
+                <% if (p.status === 'PENDING') { %>
+                  <span class="badge badge-yellow">⏳ Pending</span>
+                <% } else if (p.status === 'APPROVED') { %>
+                  <span class="badge badge-blue">✅ Disetujui</span>
+                <% } else if (p.status === 'LUNAS') { %>
+                  <span class="badge badge-green">🏆 Lunas</span>
+                <% } else { %>
+                  <span class="badge badge-red">❌ Ditolak</span>
+                <% } %>
+              </td>
+              <td><%= new Date(p.created_at).toLocaleDateString('id-ID') %></td>
+              <td><a href="/admin/pengajuan/<%= p.id %>" class="btn-ghost btn-sm"><i class="bi bi-arrow-right"></i></a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

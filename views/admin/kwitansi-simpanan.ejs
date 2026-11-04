@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="icon" type="image/png" href="/images/logo-bkn.png"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+  <style>
+    @page {
+      size: A5 landscape;
+      margin: 10mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .no-print-bar {
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-action {
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    .receipt-container {
+      width: 100%;
+      max-width: 800px;
+      background: #fff;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 28px 36px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      position: relative;
+    }
+    .receipt-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.04;
+      width: 280px;
+      pointer-events: none;
+    }
+
+    .header-box {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #1e293b;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .logo-img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      margin-right: 18px;
+    }
+    .header-text h2 {
+      font-size: 17px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .header-text h3 {
+      font-size: 14px;
+      color: #2563eb;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .header-text p {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .receipt-title-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 18px;
+    }
+    .receipt-badge {
+      font-size: 18px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #0f172a;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 2px;
+    }
+    .receipt-number {
+      font-size: 12px;
+      color: #475569;
+      font-family: monospace;
+    }
+
+    .receipt-body {
+      display: table;
+      width: 100%;
+      margin-bottom: 20px;
+      border-collapse: collapse;
+    }
+    .receipt-row {
+      display: table-row;
+    }
+    .receipt-label {
+      display: table-cell;
+      width: 170px;
+      padding: 7px 0;
+      font-size: 13px;
+      color: #475569;
+      font-weight: 600;
+    }
+    .receipt-colon {
+      display: table-cell;
+      width: 15px;
+      padding: 7px 0;
+      font-size: 13px;
+      color: #475569;
+    }
+    .receipt-val {
+      display: table-cell;
+      padding: 7px 0;
+      font-size: 13.5px;
+      color: #0f172a;
+      border-bottom: 1px dotted #cbd5e1;
+    }
+    .terbilang-box {
+      background: #f8fafc;
+      border-left: 3px solid #2563eb;
+      padding: 8px 12px;
+      font-style: italic;
+      font-weight: 600;
+      color: #1e3a8a;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .footer-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 10px;
+      padding-top: 14px;
+    }
+    .nominal-callout {
+      border: 2px solid #2563eb;
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: inline-block;
+    }
+    .nominal-callout .label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #1d4ed8;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .nominal-callout .val {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1e3a8a;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    .signature-box {
+      text-align: center;
+      width: 220px;
+    }
+    .sig-date {
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    .digital-seal {
+      display: inline-block;
+      border: 2px dashed #10b981;
+      background: rgba(16,185,129,0.06);
+      color: #047857;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .sig-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #0f172a;
+      padding-bottom: 2px;
+    }
+    .sig-role {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .receipt-container {
+        border: 1px solid #64748b;
+        box-shadow: none;
+        max-width: 100%;
+        padding: 20px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print-bar">
+    <button onclick="window.history.back()" class="btn-action btn-secondary">
+      <i class="bi bi-arrow-left"></i> Kembali
+    </button>
+    <div style="display:flex;gap:8px;">
+      <button onclick="window.print()" class="btn-action btn-primary">
+        <i class="bi bi-printer"></i> Cetak Kwitansi
+      </button>
+    </div>
+  </div>
+
+  <div class="receipt-container">
+    <img src="/images/logo-bkn.png" alt="Watermark" class="receipt-watermark"/>
+
+    <!-- Header Instansi -->
+    <div class="header-box">
+      <img src="/images/logo-bkn.png" alt="Logo BKN" class="logo-img"/>
+      <div class="header-text">
+        <h2>Koperasi Pegawai Badan Kepegawaian Negara</h2>
+        <h3>Kantor Regional V BKN Jakarta</h3>
+        <p>Jl. Raya Ciracas No. 36, Ciracas, Jakarta Timur 13740 | Telp: (021) 87721079 | Email: koperasi@kanreg5bkn.id</p>
+      </div>
+    </div>
+
+    <!-- Title & No Kwitansi -->
+    <div class="receipt-title-box">
+      <div class="receipt-badge">
+        <%= transaksi.tipe_transaksi === 'setor' ? 'Kwitansi Penerimaan Kas' : 'Kwitansi Pengeluaran Kas' %>
+      </div>
+      <div class="receipt-number">
+        No: <strong>KW-SMP-<%= String(transaksi.id).padStart(5, '0') %>/<%= new Date(transaksi.tanggal).getFullYear() %></strong>
+      </div>
+    </div>
+
+    <!-- Rincian Data -->
+    <div class="receipt-body">
+      <div class="receipt-row">
+        <div class="receipt-label">
+          <%= transaksi.tipe_transaksi === 'setor' ? 'Telah Terima Dari' : 'Dibayarkan Kepada' %>
+        </div>
+        <div class="receipt-colon">:</div>
+        <div class="receipt-val">
+          <strong><%= transaksi.anggota_nama %></strong> &nbsp;(NIP: <code><%= transaksi.anggota_nip %></code>)
+        </div>
+      </div>
+
+      <div class="receipt-row">
+        <div class="receipt-label">Unit Kerja Pegawai</div>
+        <div class="receipt-colon">:</div>
+        <div class="receipt-val"><%= transaksi.anggota_unit_kerja || 'Kanreg V BKN Jakarta' %></div>
+      </div>
+
+      <div class="receipt-row">
+        <div class="receipt-label">Terbilang</div>
+        <div class="receipt-colon">:</div>
+        <div class="receipt-val">
+          <div class="terbilang-box"># <%= terbilang %> #</div>
+        </div>
+      </div>
+
+      <div class="receipt-row">
+        <div class="receipt-label">Untuk Keperluan</div>
+        <div class="receipt-colon">:</div>
+        <div class="receipt-val">
+          <%= transaksi.tipe_transaksi === 'setor' ? 'Setoran' : 'Penarikan' %> 
+          <strong>Simpanan <%= transaksi.jenis_simpanan ? transaksi.jenis_simpanan.toUpperCase() : 'ANGGOTA' %></strong>
+          <% if (transaksi.keterangan) { %>
+            &mdash; <em><%= transaksi.keterangan %></em>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer: Nominal Box & Tanda Tangan -->
+    <div class="footer-section">
+      <div class="nominal-callout">
+        <span class="label">Jumlah Uang:</span>
+        <span class="val">Rp <%= Number(transaksi.nominal).toLocaleString('id-ID') %>,-</span>
+      </div>
+
+      <div class="signature-box">
+        <div class="sig-date">
+          Jakarta, <%= new Date(transaksi.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) %>
+        </div>
+        <div class="digital-seal">
+          <i class="bi bi-shield-check"></i> Terverifikasi Digital
+        </div>
+        <div class="sig-name"><%= transaksi.admin_nama || 'Kasir Koperasi BKN' %></div>
+        <div class="sig-role">Pengurus / Kasir Koperasi</div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
