@@ -98,7 +98,7 @@ module.exports = {
 
       // 5. Struktur Laporan Rugi Laba (PHU)
       const rugiLaba = {
-        pendapatanBunga,
+        pendapatanBunga: bungaPendapatan,
         pendapatanPremi: totalPremi,
         totalPendapatan,
         bebanOperasional,
