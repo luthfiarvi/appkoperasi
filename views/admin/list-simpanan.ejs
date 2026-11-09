@@ -91,7 +91,7 @@
           type="text" 
           name="q" 
           class="form-control" 
-          placeholder="Cari anggota berdasarkan Nama, NIP, NIK, atau Unit Kerja..." 
+          placeholder="Cari anggota berdasarkan Nama, NIP, atau Unit Kerja..." 
           value="<%= q || '' %>"
         />
       </div>
@@ -143,8 +143,8 @@
                     <div class="avatar-sm"><%= s.nama.charAt(0).toUpperCase() %></div>
                     <div>
                       <strong><%= s.nama %></strong>
-                      <% if (s.nik) { %>
-                        <div class="text-muted" style="font-size:11px">NIK: <%= s.nik %></div>
+                      <% if (s.jabatan) { %>
+                        <div class="text-muted" style="font-size:11px"><%= s.jabatan %></div>
                       <% } %>
                     </div>
                   </div>

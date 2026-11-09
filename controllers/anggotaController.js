@@ -22,7 +22,7 @@ module.exports = {
       const params = [];
 
       if (q) {
-        sql += ` AND (u.nama ILIKE $1 OR u.nip ILIKE $1 OR u.nik ILIKE $1 OR u.unit_kerja ILIKE $1)`;
+        sql += ` AND (u.nama ILIKE $1 OR u.nip ILIKE $1 OR u.jabatan ILIKE $1 OR u.unit_kerja ILIKE $1)`;
         params.push(`%${q}%`);
       }
 
@@ -89,21 +89,21 @@ module.exports = {
     }
   },
 
-  // ─── 4. API Cari Anggota by NIK / NIP (AJAX untuk tombol Cari) ──
+  // ─── 4. API Cari Anggota by NIP / NIK (AJAX untuk tombol Cari) ──
   apiCariAnggota: async (req, res) => {
     try {
-      const { nik, nip } = req.query;
+      const { nip, nik } = req.query;
       let query = '';
       let param = '';
 
-      if (nik) {
-        query = 'SELECT id, nip, nik, nama, unit_kerja, alamat, no_hp, email, gaji_bersih, skema_simpanan_pokok, tenor_simpanan_pokok FROM users WHERE nik = $1 LIMIT 1';
-        param = nik.trim();
-      } else if (nip) {
-        query = 'SELECT id, nip, nik, nama, unit_kerja, alamat, no_hp, email, gaji_bersih, skema_simpanan_pokok, tenor_simpanan_pokok FROM users WHERE nip = $1 LIMIT 1';
+      if (nip) {
+        query = 'SELECT id, nip, nik, nama, unit_kerja, jabatan, alamat, no_hp, email, gaji_bersih, skema_simpanan_pokok, tenor_simpanan_pokok FROM users WHERE nip = $1 LIMIT 1';
         param = nip.trim();
+      } else if (nik) {
+        query = 'SELECT id, nip, nik, nama, unit_kerja, jabatan, alamat, no_hp, email, gaji_bersih, skema_simpanan_pokok, tenor_simpanan_pokok FROM users WHERE nik = $1 LIMIT 1';
+        param = nik.trim();
       } else {
-        return res.json({ success: false, message: 'Masukkan NIK atau NIP untuk pencarian' });
+        return res.json({ success: false, message: 'Masukkan NIP untuk pencarian' });
       }
 
       const { rows } = await pool.query(query, [param]);

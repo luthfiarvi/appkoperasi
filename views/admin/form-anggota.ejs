@@ -10,7 +10,7 @@
       <i class="bi <%= isEdit ? 'bi-person-gear' : 'bi-person-plus-fill' %>"></i>
       <%= isEdit ? 'Edit Data Anggota' : 'Tambah Anggota Koperasi' %>
     </h1>
-    <p><%= isEdit ? `Perbarui data untuk anggota: ${anggota.nama}` : 'Input NIK, cek ketersediaan data, dan lengkapi profil anggota baru' %></p>
+    <p><%= isEdit ? `Perbarui data untuk anggota: ${anggota.nama}` : 'Input NIP ASN, cek ketersediaan data, dan lengkapi profil anggota baru' %></p>
   </div>
   <div class="page-header-actions">
     <!-- Tombol Selesai (Kembali ke data anggota) -->
@@ -37,39 +37,40 @@
         <input type="hidden" name="id" value="<%= anggota.id %>" />
       <% } %>
 
-      <!-- Bagian 1: NIK & Tombol Cari -->
+      <!-- Bagian 1: NIP ASN & Tombol Cari -->
       <div class="search-nik-box mb-4 p-3 rounded" style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);">
         <label class="form-label" style="font-weight:600; color: #93c5fd;">
-          <i class="bi bi-credit-card-2-front"></i> 1. Nomor Induk Kependudukan (NIK) <span class="required">*</span>
+          <i class="bi bi-person-badge"></i> 1. Nomor Induk Pegawai (NIP ASN) <span class="required">*</span>
         </label>
         <div class="d-flex gap-2 align-center">
           <div class="input-wrapper flex-1">
-            <i class="bi bi-upc-scan input-icon"></i>
+            <i class="bi bi-person-badge input-icon"></i>
             <input 
               type="text" 
-              name="nik" 
-              id="inputNIK" 
+              name="nip" 
+              id="inputNIP" 
               class="form-control" 
-              placeholder="Masukkan 16 digit NIK..." 
-              value="<%= anggota ? (anggota.nik || '') : '' %>"
-              maxlength="20"
+              placeholder="Masukkan 18 digit NIP ASN (Contoh: 199005152020011001)..." 
+              value="<%= anggota ? (anggota.nip || '') : '' %>"
+              maxlength="30"
               autocomplete="off"
+              required
             />
           </div>
           <!-- Tombol Cari -->
-          <button type="button" class="btn-primary" id="btnCariNIK" style="white-space: nowrap;">
+          <button type="button" class="btn-primary" id="btnCariNIP" style="white-space: nowrap;">
             <i class="bi bi-search"></i> Cari Data
           </button>
         </div>
-        <small class="form-hint" id="nikFeedback">
-          Gunakan tombol Cari untuk memeriksa apakah NIK sudah pernah terdaftar di Koperasi BKN.
+        <small class="form-hint" id="nipFeedback">
+          Gunakan tombol Cari untuk memeriksa apakah NIP ASN sudah pernah terdaftar di Koperasi BKN.
         </small>
       </div>
 
-      <!-- Bagian 2: Data Diri Anggota -->
+      <!-- Bagian 2: Data Diri Anggota ASN -->
       <div class="form-grid-2">
         <div class="form-group">
-          <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+          <label class="form-label">Nama Lengkap & Gelar <span class="required">*</span></label>
           <div class="input-wrapper">
             <i class="bi bi-person input-icon"></i>
             <input 
@@ -85,17 +86,16 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">NIP (Nomor Induk Pegawai) <span class="required">*</span></label>
+          <label class="form-label">Jabatan ASN</label>
           <div class="input-wrapper">
-            <i class="bi bi-person-badge input-icon"></i>
+            <i class="bi bi-briefcase input-icon"></i>
             <input 
               type="text" 
-              name="nip" 
-              id="inputNIP" 
+              name="jabatan" 
+              id="inputJabatan" 
               class="form-control" 
-              placeholder="Contoh: 199005152020011001" 
-              value="<%= anggota ? (anggota.nip || '') : '' %>"
-              required 
+              placeholder="Contoh: Pranata Komputer Ahli Muda" 
+              value="<%= anggota ? (anggota.jabatan || '') : '' %>"
             />
           </div>
         </div>
@@ -113,27 +113,11 @@
               class="form-control" 
               placeholder="Contoh: Subbagian Kepegawaian & TU" 
               value="<%= anggota ? (anggota.unit_kerja || '') : '' %>"
+              required
             />
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Jabatan</label>
-          <div class="input-wrapper">
-            <i class="bi bi-briefcase input-icon"></i>
-            <input 
-              type="text" 
-              name="jabatan" 
-              id="inputJabatan" 
-              class="form-control" 
-              placeholder="Contoh: Pranata Komputer Ahli Muda" 
-              value="<%= anggota ? (anggota.jabatan || '') : '' %>"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="form-grid-2">
         <div class="form-group">
           <label class="form-label">Gaji Bersih / Take Home Pay (Rp/Bulan) <span class="required">*</span></label>
           <div class="input-wrapper">
@@ -151,6 +135,7 @@
           </div>
           <small class="form-hint">Digunakan untuk menghitung batas maksimal angsuran pinjaman (Debt Service Ratio 50%).</small>
         </div>
+      </div>
 
       <div class="form-grid-2">
         <div class="form-group">
@@ -169,7 +154,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Email Pegawai</label>
+          <label class="form-label">Email Resmi Pegawai (BKN)</label>
           <div class="input-wrapper">
             <i class="bi bi-envelope input-icon"></i>
             <input 
@@ -177,7 +162,7 @@
               name="email" 
               id="inputEmail" 
               class="form-control" 
-              placeholder="Contoh: nama@bkn.go.id" 
+              placeholder="Contoh: budi.santoso@bkn.go.id" 
               value="<%= anggota ? (anggota.email || '') : '' %>"
             />
           </div>
@@ -388,44 +373,53 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const btnCari   = document.getElementById('btnCariNIK');
-  const inputNIK  = document.getElementById('inputNIK');
-  const feedback  = document.getElementById('nikFeedback');
+  const btnCari   = document.getElementById('btnCariNIP');
+  const inputNIP  = document.getElementById('inputNIP');
+  const feedback  = document.getElementById('nipFeedback');
   const btnHapus  = document.getElementById('btnHapusForm');
   const form      = document.getElementById('formAnggota');
 
-  // ─── Fitur Tombol Cari NIK ────────────────────────────────────
+  // ─── Fitur Tombol Cari NIP ASN ────────────────────────────────
   btnCari.addEventListener('click', async function() {
-    const nik = inputNIK.value.trim();
-    if (!nik) {
-      feedback.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle"></i> Silakan ketikkan NIK terlebih dahulu sebelum mencari.</span>';
-      inputNIK.focus();
+    const nip = inputNIP.value.trim();
+    if (!nip) {
+      feedback.innerHTML = '<span class="text-danger"><i class="bi bi-exclamation-circle"></i> Silakan ketikkan NIP terlebih dahulu sebelum mencari.</span>';
+      inputNIP.focus();
       return;
     }
 
-    feedback.innerHTML = '<span class="text-info"><i class="bi bi-hourglass-split"></i> Memeriksa data NIK ke database...</span>';
+    feedback.innerHTML = '<span class="text-info"><i class="bi bi-hourglass-split"></i> Memeriksa data NIP ASN ke database...</span>';
 
     try {
-      const res = await fetch('/admin/anggota/cari?nik=' + encodeURIComponent(nik));
+      const res = await fetch('/admin/anggota/cari?nip=' + encodeURIComponent(nip));
       const result = await res.json();
 
       if (result.success && result.exists) {
         const d = result.data;
-        feedback.innerHTML = `<span class="text-warning"><i class="bi bi-info-circle-fill"></i> NIK sudah terdaftar atas nama: <strong>${d.nama}</strong> (NIP: ${d.nip}). Data otomatis ditampilkan di formulir.</span>`;
+        feedback.innerHTML = `<span class="text-warning"><i class="bi bi-info-circle-fill"></i> NIP sudah terdaftar atas nama: <strong>${d.nama}</strong> (${d.jabatan || 'Pegawai'}, ${d.unit_kerja || 'BKN'}). Data otomatis ditampilkan di formulir.</span>`;
         document.getElementById('inputNama').value      = d.nama || '';
-        document.getElementById('inputNIP').value       = d.nip || '';
+        document.getElementById('inputJabatan').value   = d.jabatan || '';
         document.getElementById('inputUnitKerja').value = d.unit_kerja || '';
         document.getElementById('inputNoHp').value      = d.no_hp || '';
         document.getElementById('inputEmail').value     = d.email || '';
         document.getElementById('inputAlamat').value    = d.alamat || '';
         if (d.gaji_bersih) {
-          document.getElementById('inputGajiBersih').value = d.gaji_bersih;
+          const val = Number(d.gaji_bersih).toLocaleString('id-ID');
+          document.getElementById('inputGajiBersih').value = val;
         }
       } else {
-        feedback.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> NIK belum terdaftar. NIK valid dan siap untuk disimpan sebagai anggota baru.</span>';
+        feedback.innerHTML = '<span class="text-success"><i class="bi bi-check-circle-fill"></i> NIP belum terdaftar. NIP ASN valid dan siap untuk didaftarkan sebagai anggota baru.</span>';
       }
     } catch (err) {
-      feedback.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Gagal memeriksa NIK: ' + err.message + '</span>';
+      feedback.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Gagal memeriksa NIP: ' + err.message + '</span>';
+    }
+  });
+
+  // Tekan Enter pada input NIP langsung cari
+  inputNIP.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      btnCari.click();
     }
   });
 
@@ -433,8 +427,8 @@ document.addEventListener('DOMContentLoaded', function() {
   btnHapus.addEventListener('click', function() {
     if (confirm('Apakah Anda yakin ingin menghapus semua isian formulir ini?')) {
       form.reset();
-      feedback.innerHTML = 'Formulir telah dikosongkan. Silakan isi kembali data anggota.';
-      inputNIK.focus();
+      feedback.innerHTML = 'Formulir telah dikosongkan. Silakan isi kembali NIP dan data anggota.';
+      inputNIP.focus();
       toggleSkemaPokok();
     }
   });

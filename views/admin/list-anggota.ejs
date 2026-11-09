@@ -37,7 +37,7 @@
           type="text" 
           name="q" 
           class="form-control" 
-          placeholder="Cari berdasarkan Nama, NIP, NIK, atau Unit Kerja..." 
+          placeholder="Cari berdasarkan Nama, NIP, Jabatan, atau Unit Kerja..." 
           value="<%= q || '' %>"
         />
       </div>
@@ -64,7 +64,7 @@
             <th width="40">No</th>
             <th>Nama Lengkap</th>
             <th>NIP</th>
-            <th>NIK</th>
+            <th>Jabatan</th>
             <th>Unit Kerja</th>
             <th>Gaji Bersih</th>
             <th>No. Handphone</th>
@@ -94,7 +94,7 @@
                   </div>
                 </td>
                 <td><code><%= a.nip %></code></td>
-                <td><%= a.nik || '-' %></td>
+                <td><%= a.jabatan || 'Pegawai' %></td>
                 <td><%= a.unit_kerja || 'Kanreg V BKN' %></td>
                 <td>
                   <span class="badge badge-info" style="font-size:11px;">

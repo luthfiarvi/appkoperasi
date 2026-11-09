@@ -43,7 +43,7 @@
           <h2 style="font-size:20px;margin-bottom:4px;"><%= anggota.nama %></h2>
           <div class="text-secondary" style="font-size:13px;">
             <span>NIP: <code><%= anggota.nip %></code></span> &bull; 
-            <span>NIK: <strong><%= anggota.nik || '-' %></strong></span> &bull; 
+            <span>Jabatan: <strong><%= anggota.jabatan || 'Pegawai' %></strong></span> &bull; 
             <span>Unit Kerja: <strong><%= anggota.unit_kerja || 'Kanreg V BKN' %></strong></span>
           </div>
           <% if (anggota.no_hp) { %>

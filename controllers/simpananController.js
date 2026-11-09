@@ -32,6 +32,7 @@ module.exports = {
           u.nama,
           u.nip,
           u.nik,
+          u.jabatan,
           u.unit_kerja,
           u.skema_simpanan_pokok,
           u.tenor_simpanan_pokok,
