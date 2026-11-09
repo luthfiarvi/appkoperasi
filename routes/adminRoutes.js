@@ -8,6 +8,7 @@ const SimpananController = require('../controllers/simpananController');
 const LaporanController  = require('../controllers/laporanController');
 const ShuController      = require('../controllers/shuController');
 const AuditController    = require('../controllers/auditController');
+const PensiunController  = require('../controllers/pensiunController');
 
 // ─── Admin: Dashboard ───────────────────────────────────────────
 router.get('/admin/dashboard', isAuthenticated, isAdmin, PinjamanController.adminDashboard);
@@ -26,6 +27,12 @@ router.get('/admin/simpanan/anggota/:userId',          isAuthenticated, isAdmin,
 router.post('/admin/simpanan/transaksi',              isAuthenticated, isAdmin, SimpananController.simpanTransaksi);
 router.post('/admin/simpanan/transaksi/hapus/:id',    isAuthenticated, isAdmin, SimpananController.hapusTransaksi);
 router.get('/admin/simpanan/transaksi/:id/kwitansi',  isAuthenticated, isAdmin, SimpananController.cetakKwitansiSimpanan);
+
+// ─── 3b. Dana Pensiun & Tutup Keanggotaan ───────────────────────
+router.get('/admin/pensiun',               isAuthenticated, isAdmin, PensiunController.listPensiun);
+router.get('/admin/pensiun/proses/:userId', isAuthenticated, isAdmin, PensiunController.showFormPensiun);
+router.post('/admin/pensiun/proses',       isAuthenticated, isAdmin, PensiunController.postProsesPensiun);
+router.get('/admin/pensiun/bukti/:id',     isAuthenticated, isAdmin, PensiunController.cetakBuktiPensiun);
 
 // ─── 4. Data Pinjaman (Pinjaman + Bunga + Tenor + Angsuran Otomatis)
 router.get('/admin/pinjaman',           isAuthenticated, isAdmin, PinjamanController.adminDataPinjaman);

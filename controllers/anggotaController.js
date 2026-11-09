@@ -14,7 +14,7 @@ module.exports = {
     try {
       const q = req.query.q ? req.query.q.trim() : '';
       let sql = `
-        SELECT u.id, u.nip, u.nik, u.nama, u.unit_kerja, u.jabatan, u.alamat, u.no_hp, u.email, u.gaji_bersih, u.created_at,
+        SELECT u.id, u.nip, u.nik, u.nama, u.unit_kerja, u.jabatan, u.alamat, u.no_hp, u.email, u.gaji_bersih, u.status_keanggotaan, u.created_at,
                (SELECT COUNT(*) FROM pengajuan_pinjaman p WHERE p.user_id = u.id AND p.status = 'APPROVED') as active_loans_count
         FROM users u
         WHERE u.role = 'user'

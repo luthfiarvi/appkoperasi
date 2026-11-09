@@ -1,0 +1,200 @@
+<%
+  currentPath = '/admin/pensiun';
+  isAdmin = true;
+%>
+
+<div class="page-header animate-in">
+  <div class="page-header-title">
+    <h1><i class="bi bi-box-arrow-right"></i> Penarikan Dana Pensiun Anggota</h1>
+    <p>Kelola pencairan seluruh dana simpanan bagi pegawai ASN yang telah memasuki masa pensiun atau berhenti keanggotaan</p>
+  </div>
+  <div class="page-header-actions d-flex gap-2">
+    <a href="/admin/simpanan" class="btn-secondary">
+      <i class="bi bi-wallet2"></i> Data Simpanan
+    </a>
+  </div>
+</div>
+
+<% if (locals.success) { %>
+  <div class="alert alert-success animate-in">
+    <i class="bi bi-check-circle-fill"></i> <%= success %>
+  </div>
+<% } %>
+
+<% if (locals.error) { %>
+  <div class="alert alert-danger animate-in">
+    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+  </div>
+<% } %>
+
+<!-- Stats Grid -->
+<div class="stats-grid mb-4 animate-in">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(59,130,246,0.15); color: #60a5fa;">
+      <i class="bi bi-people-fill"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Total Anggota Pensiun</div>
+      <div class="stat-value" style="color: #60a5fa;"><%= totalKasus %> Orang</div>
+      <div class="stat-desc">Akumulasi pegawai yang telah tutup buku</div>
+    </div>
+  </div>
+
+  <div class="stat-card stat-highlight">
+    <div class="stat-icon" style="background: rgba(16,185,129,0.15); color: #34d399;">
+      <i class="bi bi-cash-stack"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Total Dana Dicairkan</div>
+      <div class="stat-value" style="color: #34d399;"><%= formatRp(totalDanaDicairkan) %></div>
+      <div class="stat-desc">Total hak simpanan netto yang diserahkan</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(245,158,11,0.15); color: #fbbf24;">
+      <i class="bi bi-shield-check"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Total Hutang Dilunasi</div>
+      <div class="stat-value" style="color: #fbbf24;"><%= formatRp(totalHutangDipotong) %></div>
+      <div class="stat-desc">Dipotong langsung dari simpanan pensiun</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon" style="background: rgba(139,92,246,0.15); color: #a78bfa;">
+      <i class="bi bi-file-earmark-text"></i>
+    </div>
+    <div class="stat-info">
+      <div class="stat-label">Status Anggota Pensiun</div>
+      <div class="stat-value" style="font-size: 16px; color: #a78bfa;">Bebas Payroll Gaji</div>
+      <div class="stat-desc">Otomatis non-aktif dari potongan bulanan</div>
+    </div>
+  </div>
+</div>
+
+<!-- Card Quick Action: Proses Penarikan Pensiun Baru -->
+<div class="card mb-4 animate-in" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(59, 130, 246, 0.3);">
+  <div class="card-header py-3 px-4 d-flex justify-between align-center" style="background: rgba(59, 130, 246, 0.08); border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
+    <h3 class="mb-0" style="font-size: 1rem; color: #93c5fd;">
+      <i class="bi bi-person-fill-gear text-primary me-2"></i> Proses Penarikan Dana Pensiun Baru
+    </h3>
+    <span class="badge badge-info">Pilih Anggota ASN Aktif</span>
+  </div>
+  <div class="card-body p-4">
+    <div class="d-flex gap-3 align-center flex-wrap">
+      <div class="flex-1" style="min-width: 280px;">
+        <label class="form-label mb-1" style="font-size: 12.5px; color: var(--text-muted);">Pilih Pegawai / Anggota yang Memasuki Masa Pensiun:</label>
+        <div class="input-wrapper">
+          <i class="bi bi-person input-icon"></i>
+          <select id="selectAnggotaPensiun" class="form-control" style="cursor: pointer;">
+            <option value="">-- Pilih Anggota Aktif Koperasi BKN --</option>
+            <% anggotaAktif.forEach(a => { %>
+              <option value="<%= a.id %>">
+                <%= a.nama %> &mdash; NIP: <%= a.nip %> (<%= a.jabatan || 'Pegawai' %>, <%= a.unit_kerja || 'BKN' %>)
+              </option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+      <div style="align-self: flex-end;">
+        <button type="button" class="btn-primary" onclick="bukaFormPensiun()" style="white-space: nowrap;">
+          <i class="bi bi-box-arrow-in-right"></i> Proses Penarikan &rarr;
+        </button>
+      </div>
+    </div>
+    <small class="form-hint mt-2 text-muted">
+      <i class="bi bi-info-circle"></i> Sistem akan menghitung akumulasi seluruh simpanan (pokok, wajib, sukarela), mengecek sisa hutang pinjaman, dan menyiapkan Surat Berita Acara & Bukti Pencairan Resmi.
+    </small>
+  </div>
+</div>
+
+<!-- Tabel Riwayat Penarikan Dana Pensiun -->
+<div class="card animate-in">
+  <div class="card-header d-flex justify-between align-center flex-wrap gap-2">
+    <h3><i class="bi bi-journal-text"></i> Riwayat Pencairan Dana Pensiun (<%= listPensiun.length %>)</h3>
+    <form action="/admin/pensiun" method="GET" class="d-flex gap-2">
+      <div class="input-wrapper" style="min-width: 220px;">
+        <i class="bi bi-search input-icon"></i>
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="Cari No. Surat, Nama, NIP..." value="<%= q || '' %>"/>
+      </div>
+      <button type="submit" class="btn-primary btn-sm"><i class="bi bi-search"></i></button>
+      <% if (q) { %>
+        <a href="/admin/pensiun" class="btn-secondary btn-sm">Reset</a>
+      <% } %>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th width="40">No</th>
+            <th>No. Surat Berita Acara</th>
+            <th>Tanggal</th>
+            <th>Nama & NIP Pegawai</th>
+            <th>Unit Kerja</th>
+            <th class="text-right">Total Simpanan</th>
+            <th class="text-right">Potongan Hutang</th>
+            <th class="text-right">Total Bersih Dicairkan</th>
+            <th width="140" class="text-center">Dokumen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (listPensiun.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                Belum ada data pencairan dana pensiun<%= q ? ' yang sesuai dengan pencarian' : '' %>.
+              </td>
+            </tr>
+          <% } else { %>
+            <% listPensiun.forEach((p, idx) => { %>
+              <tr>
+                <td><%= idx + 1 %></td>
+                <td>
+                  <strong class="font-mono" style="color: #93c5fd;"><%= p.nomor_surat %></strong>
+                  <div class="text-muted" style="font-size: 11px;"><%= p.alasan %></div>
+                </td>
+                <td style="white-space: nowrap;">
+                  <%= new Date(p.tanggal_penarikan).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) %>
+                </td>
+                <td>
+                  <strong><%= p.nama_anggota %></strong>
+                  <div class="text-muted" style="font-size: 11px;">NIP: <code><%= p.nip_anggota %></code></div>
+                </td>
+                <td><%= p.unit_kerja_anggota || 'Kanreg V BKN' %></td>
+                <td class="text-right font-mono text-secondary">
+                  <%= formatRp(p.total_simpanan_kotor) %>
+                </td>
+                <td class="text-right font-mono" style="color: <%= p.sisa_pinjaman_pokok > 0 ? '#f87171' : 'var(--text-muted)' %>;">
+                  <%= p.sisa_pinjaman_pokok > 0 ? '-' + formatRp(p.sisa_pinjaman_pokok) : '-' %>
+                </td>
+                <td class="text-right font-mono font-bold" style="color: #34d399; font-size: 14px;">
+                  <%= formatRp(p.total_dana_diterima) %>
+                </td>
+                <td class="text-center">
+                  <a href="/admin/pensiun/bukti/<%= p.id %>" target="_blank" class="btn-sm btn-outline-primary" title="Cetak Surat Berita Acara & Bukti Pencairan">
+                    <i class="bi bi-printer-fill"></i> Cetak Bukti
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function bukaFormPensiun() {
+  const userId = document.getElementById('selectAnggotaPensiun').value;
+  if (!userId) {
+    alert('Silakan pilih anggota yang ingin diproses pensiun terlebih dahulu.');
+    return;
+  }
+  window.location.href = '/admin/pensiun/proses/' + userId;
+}
+</script>

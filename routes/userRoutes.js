@@ -3,6 +3,7 @@ const router    = express.Router();
 const { isAuthenticated, isUser } = require('../middleware/auth');
 const PinjamanController = require('../controllers/pinjamanController');
 const SimpananController = require('../controllers/simpananController');
+const PensiunController  = require('../controllers/pensiunController');
 
 // Dashboard user
 router.get('/dashboard', isAuthenticated, isUser, PinjamanController.userDashboard);
@@ -19,8 +20,9 @@ router.post('/simulasi', isAuthenticated, isUser, PinjamanController.postSimulas
 router.get('/pengajuan',  isAuthenticated, isUser, PinjamanController.showFormPengajuan);
 router.post('/pengajuan', isAuthenticated, isUser, PinjamanController.submitPengajuan);
 
-// Dokumen Digital User: Bukti Pencairan & Surat Lunas (SKL)
+// Dokumen Digital User: Bukti Pencairan & Surat Lunas (SKL) & Bukti Pensiun
 router.get('/pinjaman/:id/bukti-cair',  isAuthenticated, isUser, PinjamanController.cetakBuktiPencairan);
 router.get('/pinjaman/:id/surat-lunas', isAuthenticated, isUser, PinjamanController.cetakSuratLunas);
+router.get('/pensiun/bukti/:id',        isAuthenticated, isUser, PensiunController.cetakBuktiPensiun);
 
 module.exports = router;

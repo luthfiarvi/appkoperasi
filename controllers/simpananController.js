@@ -34,6 +34,7 @@ module.exports = {
           u.nik,
           u.jabatan,
           u.unit_kerja,
+          u.status_keanggotaan,
           u.skema_simpanan_pokok,
           u.tenor_simpanan_pokok,
           u.nominal_cicilan_pokok,
@@ -102,7 +103,7 @@ module.exports = {
       const { userId } = req.params;
 
       const { rows: userRows } = await pool.query(
-        "SELECT id, nama, nip, nik, unit_kerja, no_hp, alamat, skema_simpanan_pokok, tenor_simpanan_pokok, nominal_cicilan_pokok FROM users WHERE id = $1 AND role = 'user'",
+        "SELECT id, nama, nip, nik, jabatan, unit_kerja, no_hp, alamat, skema_simpanan_pokok, tenor_simpanan_pokok, nominal_cicilan_pokok, status_keanggotaan FROM users WHERE id = $1 AND role = 'user'",
         [userId]
       );
 
@@ -111,6 +112,13 @@ module.exports = {
       }
 
       const anggota = userRows[0];
+
+      // Ambil data pencairan pensiun jika ada
+      const { rows: pensiunRows } = await pool.query(
+        "SELECT id, nomor_surat, tanggal_penarikan, total_dana_diterima FROM penarikan_pensiun WHERE user_id = $1 ORDER BY id DESC LIMIT 1",
+        [userId]
+      );
+      const dataPensiun = pensiunRows.length > 0 ? pensiunRows[0] : null;
 
       // Ambil seluruh riwayat transaksi simpanan anggota
       const { rows: riwayat } = await pool.query(`
@@ -143,6 +151,7 @@ module.exports = {
       res.render('admin/detail-simpanan', {
         title: `Buku Simpanan — ${anggota.nama}`,
         anggota,
+        dataPensiun,
         riwayat,
         saldo: { pokok, wajib, sukarela, total },
         targetPokok,
@@ -334,9 +343,17 @@ module.exports = {
         ? parseFloat(userPref.nominal_cicilan_pokok) 
         : Math.round(targetPokok / (userPref.tenor_simpanan_pokok || 12));
 
+      // Ambil data pencairan pensiun jika ada
+      const { rows: pensiunRows } = await pool.query(
+        "SELECT id, nomor_surat, tanggal_penarikan, total_dana_diterima FROM penarikan_pensiun WHERE user_id = $1 ORDER BY id DESC LIMIT 1",
+        [userId]
+      );
+      const dataPensiun = pensiunRows.length > 0 ? pensiunRows[0] : null;
+
       res.render('user/simpanan-saya', {
         title: 'Buku Simpanan Saya — Koperasi BKN',
         riwayat,
+        dataPensiun,
         saldo: { pokok, wajib, sukarela, total: pokok + wajib + sukarela },
         user: currentUser,
         userPref,

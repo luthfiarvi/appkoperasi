@@ -13,6 +13,18 @@
   </div>
 </div>
 
+<% if (locals.dataPensiun) { %>
+  <div class="alert alert-warning animate-in mb-4 d-flex justify-between align-center flex-wrap gap-2" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3);">
+    <div>
+      <i class="bi bi-box-arrow-right text-warning fs-5 me-2"></i>
+      <strong>Keanggotaan Telah Selesai (Pensiun):</strong> Seluruh dana simpanan telah berhasil dicairkan dengan Berita Acara No. <strong><%= dataPensiun.nomor_surat %></strong>.
+    </div>
+    <a href="/pensiun/bukti/<%= dataPensiun.id %>" target="_blank" class="btn-primary btn-sm">
+      <i class="bi bi-printer-fill"></i> Unduh / Cetak Bukti Pencairan
+    </a>
+  </div>
+<% } %>
+
 <!-- 4 Saldo Box -->
 <div class="stats-grid mb-4 animate-in">
   <div class="stat-card">

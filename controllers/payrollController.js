@@ -29,7 +29,7 @@ const PayrollController = {
             COALESCE((SELECT SUM(CASE WHEN ts.tipe_transaksi='setor' THEN ts.nominal ELSE -ts.nominal END) 
                       FROM transaksi_simpanan ts WHERE ts.user_id = u.id AND ts.jenis_simpanan='pokok'), 0) < 1005000 
             THEN COALESCE(u.nominal_cicilan_pokok, ROUND(1005000 / NULLIF(u.tenor_simpanan_pokok, 0))) ELSE 0 END), 0) as total_cicilan_pokok
-        FROM users u WHERE u.role = 'user'
+        FROM users u WHERE u.role = 'user' AND (u.status_keanggotaan IS NULL OR u.status_keanggotaan = 'AKTIF')
       `);
 
       const totalAnggota = parseInt(memberStats[0]?.total_anggota || 0);

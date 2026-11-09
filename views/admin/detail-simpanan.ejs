@@ -11,10 +11,19 @@
     <h1><i class="bi bi-book"></i> Buku Simpanan Anggota</h1>
     <p>Riwayat mutasi setoran dan penarikan simpanan anggota koperasi</p>
   </div>
-  <div class="page-header-actions d-flex gap-2">
-    <button type="button" class="btn-primary" onclick="openModalTransaksi()">
-      <i class="bi bi-plus-lg"></i> Tambah Transaksi
-    </button>
+  <div class="page-header-actions d-flex gap-2 flex-wrap">
+    <% if (locals.dataPensiun) { %>
+      <a href="/admin/pensiun/bukti/<%= dataPensiun.id %>" target="_blank" class="btn-success">
+        <i class="bi bi-printer-fill"></i> Cetak Bukti Pensiun (<%= dataPensiun.nomor_surat %>)
+      </a>
+    <% } else { %>
+      <a href="/admin/pensiun/proses/<%= anggota.id %>" class="btn-danger">
+        <i class="bi bi-box-arrow-right"></i> Penarikan Dana Pensiun
+      </a>
+      <button type="button" class="btn-primary" onclick="openModalTransaksi()">
+        <i class="bi bi-plus-lg"></i> Tambah Transaksi
+      </button>
+    <% } %>
     <a href="/admin/simpanan" class="btn-secondary">
       <i class="bi bi-arrow-left"></i> Kembali
     </a>
@@ -40,7 +49,14 @@
       <div class="d-flex align-center gap-3">
         <div class="avatar-lg"><%= anggota.nama.charAt(0).toUpperCase() %></div>
         <div>
-          <h2 style="font-size:20px;margin-bottom:4px;"><%= anggota.nama %></h2>
+          <h2 style="font-size:20px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+            <%= anggota.nama %>
+            <% if (anggota.status_keanggotaan === 'PENSIUN') { %>
+              <span class="badge badge-yellow" style="font-size:11px;padding:2px 8px;"><i class="bi bi-box-arrow-right"></i> PENSIUN</span>
+            <% } else { %>
+              <span class="badge badge-green" style="font-size:11px;padding:2px 8px;">AKTIF</span>
+            <% } %>
+          </h2>
           <div class="text-secondary" style="font-size:13px;">
             <span>NIP: <code><%= anggota.nip %></code></span> &bull; 
             <span>Jabatan: <strong><%= anggota.jabatan || 'Pegawai' %></strong></span> &bull; 

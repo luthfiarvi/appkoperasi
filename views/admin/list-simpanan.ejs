@@ -142,7 +142,12 @@
                   <div class="d-flex align-center gap-2">
                     <div class="avatar-sm"><%= s.nama.charAt(0).toUpperCase() %></div>
                     <div>
-                      <strong><%= s.nama %></strong>
+                      <div class="d-flex align-center gap-1">
+                        <strong><%= s.nama %></strong>
+                        <% if (s.status_keanggotaan === 'PENSIUN') { %>
+                          <span class="badge badge-yellow" style="font-size:10px;padding:1px 5px;"><i class="bi bi-box-arrow-right"></i> Pensiun</span>
+                        <% } %>
+                      </div>
                       <% if (s.jabatan) { %>
                         <div class="text-muted" style="font-size:11px"><%= s.jabatan %></div>
                       <% } %>
