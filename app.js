@@ -78,6 +78,7 @@ app.use((req, res, next) => {
       'admin/kwitansi-simpanan',
       'admin/bukti-pencairan',
       'admin/surat-lunas',
+      'admin/surat-pensiun',
       'errors/403', 
       'errors/500'
     ];
