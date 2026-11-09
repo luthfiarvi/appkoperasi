@@ -61,8 +61,8 @@
   <div class="card-body">
     <div class="info-row mb-3">
       <span>Plafon Pinjaman: <strong><%= formatRp(activeLoan.nominal_pengajuan) %></strong></span>
-      <span>Dana Diterima: <strong><%= formatRp(activeLoan.nominal_cair) %></strong></span>
-      <span>Biaya Admin: <strong><%= formatRp(activeLoan.biaya_admin) %></strong></span>
+      <span>Dana Bersih Diterima: <strong><%= formatRp(activeLoan.nominal_cair) %></strong></span>
+      <span>Premi Pinjaman (1%): <strong><%= formatRp(activeLoan.biaya_admin) %></strong></span>
     </div>
     <div class="table-responsive">
       <table class="table">

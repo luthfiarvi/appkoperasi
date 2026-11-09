@@ -247,11 +247,11 @@
         <h4><i class="bi bi-check-circle text-green"></i> Setujui Pengajuan</h4>
         <form action="/admin/pengajuan/<%= pinjaman.id %>/approve" method="POST" id="formApprove">
           <div class="form-group">
-            <label class="form-label">Jenis Premi / Biaya Admin</label>
+            <label class="form-label">Skema Premi Pinjaman (di Awal)</label>
             <div class="radio-group">
               <label class="radio-item">
                 <input type="radio" name="biaya_admin_type" value="persen" id="radioPersen" checked onchange="toggleBiayaAdmin()" />
-                Persentase (1% Fix Kebijakan)
+                Premi 1% di Awal (Standar Koperasi)
               </label>
               <label class="radio-item">
                 <input type="radio" name="biaya_admin_type" value="flat" id="radioFlat" onchange="toggleBiayaAdmin()" />
@@ -261,7 +261,7 @@
           </div>
 
           <div class="form-group" id="boxPersen">
-            <label class="form-label">Premi / Biaya Admin (%) <span class="badge badge-success" style="font-size:10px;">Fix: 1%</span></label>
+            <label class="form-label">Premi Pinjaman (%) <span class="badge badge-success" style="font-size:10px;">1% di Awal</span></label>
             <div class="input-wrapper">
               <i class="bi bi-percent input-icon"></i>
               <input type="number" name="biaya_admin_persen" class="form-control" placeholder="Contoh: 1" min="0" max="10" step="0.1" value="1"/>
@@ -269,7 +269,7 @@
           </div>
 
           <div class="form-group" id="boxFlat" style="display:none">
-            <label class="form-label">Premi / Biaya Admin (Rp)</label>
+            <label class="form-label">Premi Pinjaman (Rp)</label>
             <div class="input-wrapper">
               <i class="bi bi-cash input-icon"></i>
               <input type="text" inputmode="numeric" name="biaya_admin_nominal" class="form-control input-rupiah" placeholder="Contoh: 50.000" value="<%= Math.round(pinjaman.nominal_pengajuan * 0.01).toLocaleString('id-ID') %>"/>
@@ -335,7 +335,7 @@
     
     let calcHtml = `<div>Dana Bersih Dicairkan: <strong style="color: #34d399; font-size:16px;">${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(cair)}</strong></div>`;
     if (isTopUp) {
-      calcHtml += `<div style="font-size:11.5px; color:#fbbf24; margin-top:4px;"><i class="bi bi-info-circle"></i> Sisa pokok lama dilunasi: ${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(potongTopUp)} &bull; Biaya admin: ${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(biaya)}</div>`;
+      calcHtml += `<div style="font-size:11.5px; color:#fbbf24; margin-top:4px;"><i class="bi bi-info-circle"></i> Sisa pokok lama dilunasi: ${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(potongTopUp)} &bull; Premi pinjaman (1%): ${new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(biaya)}</div>`;
     }
     document.getElementById('previewCalc').innerHTML = calcHtml;
   }

@@ -103,7 +103,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Premi Pinjaman / Administrasi</label>
+          <label class="form-label">Premi Pinjaman (1% di Awal)</label>
           <div class="input-wrapper">
             <i class="bi bi-tag input-icon"></i>
             <input 
@@ -112,12 +112,12 @@
               name="biaya_admin_nominal" 
               id="inputAdmin" 
               class="form-control input-rupiah" 
-              value="50.000" 
-              placeholder="Contoh: 50.000"
+              value="" 
+              placeholder="Otomatis 1% dari Plafon"
             />
           </div>
           <input type="hidden" name="biaya_admin_type" value="flat" />
-          <small class="form-hint">Dipotong saat pencairan (Dana Bersih = Plafon - Premi)</small>
+          <small class="form-hint">Dipotong di awal saat pencairan (Dana Bersih = Plafon &minus; Premi 1%)</small>
         </div>
       </div>
 
@@ -198,7 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const plafon = parseFloat(String(inputPlafon.value).replace(/[^0-9]/g, '')) || 0;
     const tenor  = parseInt(selectTenor.value) || 0;
     const rate   = parseFloat(inputBunga.value) || 0;
-    const admin  = parseFloat(String(inputAdmin.value).replace(/[^0-9]/g, '')) || 0;
+
+    // Otomatis hitung Premi Pinjaman 1% di awal jika belum diedit manual
+    let admin = parseFloat(String(inputAdmin.value).replace(/[^0-9]/g, '')) || 0;
+    if (!inputAdmin.dataset.userEdited && plafon > 0) {
+      admin = Math.round(0.01 * plafon);
+      inputAdmin.value = admin.toLocaleString('id-ID');
+    }
 
     const opt = selectUser.options[selectUser.selectedIndex];
     const gaji = opt && opt.dataset.gaji ? parseFloat(opt.dataset.gaji) : 6500000;
@@ -245,11 +251,15 @@ document.addEventListener('DOMContentLoaded', function() {
   inputPlafon.addEventListener('input', hitungOtomatis);
   selectTenor.addEventListener('change', hitungOtomatis);
   inputBunga.addEventListener('input', hitungOtomatis);
-  inputAdmin.addEventListener('input', hitungOtomatis);
+  inputAdmin.addEventListener('input', function() {
+    inputAdmin.dataset.userEdited = 'true';
+    hitungOtomatis();
+  });
 
   btnHapus.addEventListener('click', function() {
     if (confirm('Kosongkan semua isian form pinjaman ini?')) {
       form.reset();
+      delete inputAdmin.dataset.userEdited;
       hitungOtomatis();
     }
   });
