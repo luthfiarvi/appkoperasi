@@ -587,6 +587,8 @@ const PinjamanController = {
       tglSelesai.setMonth(tglSelesai.getMonth() + (parseInt(pinjaman.tenor_bulan) - 1));
       const selesaiBulan = `${bulanArr[tglSelesai.getMonth()]} ${tglSelesai.getFullYear()}`;
 
+      const backUrl = req.session.user?.role === 'user' ? '/dashboard' : '/admin/pinjaman';
+
       res.render('admin/form-pinjaman-cetak', {
         title: `Formulir Permohonan Pinjaman #${pinjaman.id} — ${pinjaman.nama}`,
         pinjaman,
@@ -594,6 +596,7 @@ const PinjamanController = {
         mulaiBulan,
         selesaiBulan,
         formatRp,
+        backUrl,
         tanggalCetak: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
       });
     } catch (err) {
