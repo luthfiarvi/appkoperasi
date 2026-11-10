@@ -55,7 +55,12 @@
     <div class="stat-info">
       <div class="stat-label">b. Simpanan Wajib</div>
       <div class="stat-value" style="color: #34d399;"><%= formatRp(saldo.wajib) %></div>
-      <div class="stat-desc mt-1">Iuran wajib Rp 100.000 / bulan</div>
+      <div class="stat-desc mt-1">
+        <span class="badge badge-success" style="font-size:10px;padding:2px 6px;">
+          <i class="bi bi-calendar-check"></i> <%= Math.floor(parseFloat(saldo.wajib || 0) / 100000) %> Bulan Terbayar
+        </span>
+        <div class="text-muted mt-1" style="font-size:11px;">Rutin tiap awal bulan via payroll (Rp 100rb/bln)</div>
+      </div>
     </div>
   </div>
 
@@ -66,7 +71,12 @@
     <div class="stat-info">
       <div class="stat-label">c. Simpanan Sukarela</div>
       <div class="stat-value" style="color: #fbbf24;"><%= formatRp(saldo.sukarela) %></div>
-      <div class="stat-desc mt-1">Tabungan sukarela fleksibel</div>
+      <div class="stat-desc mt-1">
+        <span class="badge badge-info" style="font-size:10px;padding:2px 6px;">
+          <i class="bi bi-arrow-left-right"></i> Fleksibel
+        </span>
+        <div class="text-muted mt-1" style="font-size:11px;">Setor & tarik bebas sewaktu-waktu</div>
+      </div>
     </div>
   </div>
 

@@ -4,6 +4,10 @@
   function formatRp(val) {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
   }
+  function formatDate(d) {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
 %>
 
 <div class="page-header animate-in">
@@ -52,7 +56,7 @@
     <div class="stat-info">
       <div class="stat-label">b. Simpanan Wajib</div>
       <div class="stat-value" style="color: #34d399;"><%= formatRp(grandTotal.wajib) %></div>
-      <div class="stat-desc">Iuran rutin Rp 100.000/bln per anggota</div>
+      <div class="stat-desc">Rutin dipotong tiap awal bulan via payroll (Rp 100rb/bln)</div>
     </div>
   </div>
 
@@ -64,7 +68,7 @@
     <div class="stat-info">
       <div class="stat-label">c. Simpanan Sukarela</div>
       <div class="stat-value" style="color: #fbbf24;"><%= formatRp(grandTotal.sukarela) %></div>
-      <div class="stat-desc">Tabungan fleksibel (setor/tarik)</div>
+      <div class="stat-desc">Fleksibel & sewaktu-waktu (bebas setor/tarik kapan saja)</div>
     </div>
   </div>
 
@@ -107,8 +111,17 @@
 
 <!-- Tabel Rincian Simpanan per Anggota -->
 <div class="card animate-in">
-  <div class="card-header">
-    <h3><i class="bi bi-table"></i> Rincian Saldo Simpanan per Anggota (<%= simpananList.length %>)</h3>
+  <div class="card-header d-flex justify-between align-center flex-wrap gap-2">
+    <div>
+      <h3 style="margin-bottom: 2px;"><i class="bi bi-table"></i> Rincian Saldo Simpanan per Anggota (<%= simpananList.length %>)</h3>
+      <div class="text-muted" style="font-size: 11.5px;">
+        <i class="bi bi-clock-history"></i> 
+        <strong>Keterangan Waktu:</strong> 
+        Simpanan Pokok (1x diawal/cicil maks 12 bln) &bull; 
+        Simpanan Wajib (rutin tiap awal bulan via payroll gaji) &bull; 
+        Simpanan Sukarela (fleksibel kapan saja)
+      </div>
+    </div>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
@@ -119,9 +132,9 @@
             <th>Nama Anggota</th>
             <th>NIP</th>
             <th>Unit Kerja</th>
-            <th class="text-right">Simpanan Pokok<br><small class="text-muted" style="font-weight: normal;">(Rp 1.005.000)</small></th>
-            <th class="text-right">Simpanan Wajib<br><small class="text-muted" style="font-weight: normal;">(Rp 100.000/bln)</small></th>
-            <th class="text-right">Simpanan Sukarela</th>
+            <th class="text-right">Simpanan Pokok<br><small class="text-muted" style="font-weight: normal;">(Rp 1.005.000 &bull; 1x Awal)</small></th>
+            <th class="text-right">Simpanan Wajib<br><small class="text-muted" style="font-weight: normal;">(Rp 100.000/bln &bull; Rutin Payroll)</small></th>
+            <th class="text-right">Simpanan Sukarela<br><small class="text-muted" style="font-weight: normal;">(Fleksibel &bull; Kapan Saja)</small></th>
             <th class="text-right">Total Keseluruhan</th>
             <th width="140" class="text-center">Aksi</th>
           </tr>
@@ -169,8 +182,55 @@
                     </span>
                   <% } %>
                 </td>
-                <td class="text-right font-mono" style="color: #6ee7b7;"><%= formatRp(s.simpanan_wajib) %></td>
-                <td class="text-right font-mono" style="color: #fde047;"><%= formatRp(s.simpanan_sukarela) %></td>
+                <td class="text-right">
+                  <div class="font-mono" style="color: #6ee7b7; font-weight: 600;"><%= formatRp(s.simpanan_wajib) %></div>
+                  <% 
+                    const sWajib = parseFloat(s.simpanan_wajib || 0);
+                    const blnWajib = Math.floor(sWajib / 100000);
+                  %>
+                  <div style="margin-top: 3px;">
+                    <% if (sWajib > 0) { %>
+                      <span class="badge badge-success" style="font-size: 10px; padding: 2px 6px;">
+                        <i class="bi bi-calendar-check"></i> <%= blnWajib %> Bulan Terbayar
+                      </span>
+                      <% if (s.last_wajib_date) { %>
+                        <div class="text-muted" style="font-size: 10px; margin-top: 2px;" title="Tanggal potong terakhir">
+                          <i class="bi bi-clock-history"></i> <%= formatDate(s.last_wajib_date) %>
+                        </div>
+                      <% } else { %>
+                        <div class="text-muted" style="font-size: 9.5px; margin-top: 2px;">Rutin Payroll Gaji</div>
+                      <% } %>
+                    <% } else { %>
+                      <span class="badge badge-warning" style="font-size: 10px; padding: 2px 6px;">
+                        <i class="bi bi-clock"></i> Belum Terpotong
+                      </span>
+                      <div class="text-muted" style="font-size: 9.5px; margin-top: 2px;">Rutin Tiap Awal Bln</div>
+                    <% } %>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <div class="font-mono" style="color: #fde047; font-weight: 600;"><%= formatRp(s.simpanan_sukarela) %></div>
+                  <% const sSukarela = parseFloat(s.simpanan_sukarela || 0); %>
+                  <div style="margin-top: 3px;">
+                    <% if (sSukarela > 0) { %>
+                      <span class="badge badge-info" style="font-size: 10px; padding: 2px 6px;">
+                        <i class="bi bi-arrow-left-right"></i> Fleksibel
+                      </span>
+                      <% if (s.last_sukarela_date) { %>
+                        <div class="text-muted" style="font-size: 10px; margin-top: 2px;" title="Tanggal transaksi terakhir">
+                          <i class="bi bi-clock-history"></i> <%= formatDate(s.last_sukarela_date) %>
+                        </div>
+                      <% } else { %>
+                        <div class="text-muted" style="font-size: 9.5px; margin-top: 2px;">Bebas Kapan Saja</div>
+                      <% } %>
+                    <% } else { %>
+                      <span class="badge badge-secondary" style="font-size: 10px; padding: 2px 6px;">
+                        Saldo Rp 0
+                      </span>
+                      <div class="text-muted" style="font-size: 9.5px; margin-top: 2px;">Bebas Kapan Saja</div>
+                    <% } %>
+                  </div>
+                </td>
                 <td class="text-right font-mono font-bold" style="color: #c4b5fd;"><%= formatRp(s.total_simpanan) %></td>
                 <td class="text-center">
                   <div class="btn-group gap-1">

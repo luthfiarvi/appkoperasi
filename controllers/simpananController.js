@@ -45,7 +45,9 @@ module.exports = {
           COALESCE(SUM(CASE WHEN ts.jenis_simpanan = 'sukarela' AND ts.tipe_transaksi = 'setor' THEN ts.nominal
                             WHEN ts.jenis_simpanan = 'sukarela' AND ts.tipe_transaksi = 'tarik' THEN -ts.nominal ELSE 0 END), 0) AS simpanan_sukarela,
           COALESCE(SUM(CASE WHEN ts.tipe_transaksi = 'setor' THEN ts.nominal
-                            WHEN ts.tipe_transaksi = 'tarik' THEN -ts.nominal ELSE 0 END), 0) AS total_simpanan
+                            WHEN ts.tipe_transaksi = 'tarik' THEN -ts.nominal ELSE 0 END), 0) AS total_simpanan,
+          MAX(CASE WHEN ts.jenis_simpanan = 'wajib' THEN ts.tanggal ELSE NULL END) AS last_wajib_date,
+          MAX(CASE WHEN ts.jenis_simpanan = 'sukarela' THEN ts.tanggal ELSE NULL END) AS last_sukarela_date
         FROM users u
         LEFT JOIN transaksi_simpanan ts ON u.id = ts.user_id
         WHERE u.role = 'user' ${filterSql}
