@@ -146,8 +146,24 @@
       display: inline-block;
     }
 
-    /* KOTAK TUNGGAL HITAM MEMBUNGKUS DARI ATAS SAMPAI BAWAH */
-    .kw-form-box {
+    /* 3 BINGKAI KOTAK DENGAN PEMISAH BORDER GAP (PERSIS SEPERTI GAMBAR FORM PENSIUN.PNG) */
+    .kw-box-top {
+      border: 1px solid #000000;
+      width: 100%;
+      background: #ffffff;
+      box-sizing: border-box;
+      margin-bottom: 3px; /* PEMISAH BORDER DENGAN KOTAK JUMLAH */
+    }
+
+    .kw-box-jumlah {
+      border: 1px solid #000000;
+      width: 100%;
+      background: #dedede;
+      box-sizing: border-box;
+      margin-bottom: 3px; /* PEMISAH BORDER DENGAN KOTAK BAWAH */
+    }
+
+    .kw-box-bottom {
       border: 1px solid #000000;
       width: 100%;
       background: #ffffff;
@@ -180,17 +196,6 @@
       text-align: left;
     }
     .kw-c-val-bold {
-      font-weight: bold;
-    }
-
-    /* BARIS JUMLAH */
-    .kw-jumlah-grid {
-      border-top: 1px solid #000000 !important;
-      border-bottom: 1px solid #000000 !important;
-      background: #e2e2e2 !important;
-    }
-    .kw-jumlah-grid td {
-      padding: 5px 10px;
       font-weight: bold;
     }
 
@@ -512,9 +517,8 @@
       <div class="kw-title-main"><span>KWITANSI PENGEMBALIAN SIMPANAN KOPERASI</span></div>
     </div>
 
-    <!-- SATU BINGKAI KOTAK UTAMA (PERSIS SEPERTI FOTO form pensiun.png) -->
-    <div class="kw-form-box">
-      <!-- 1. Sudah Terima Dari & Terbilang -->
+    <!-- 1. KOTAK ATAS: SUDAH TERIMA DARI & TERBILANG -->
+    <div class="kw-box-top">
       <table class="kw-grid">
         <tr>
           <td class="kw-c-label">Sudah terima dari</td>
@@ -527,17 +531,21 @@
           <td class="kw-c-val"><%= terbilang.charAt(0).toUpperCase() + terbilang.slice(1).toLowerCase() %></td>
         </tr>
       </table>
+    </div>
 
-      <!-- 2. Jumlah (Garis Atas-Bawah & Background Abu-abu) -->
-      <table class="kw-grid kw-jumlah-grid">
+    <!-- 2. KOTAK TENGAH: JUMLAH (DIPISAH BORDER DENGAN GAP 3PX & BACKGROUND ABU-ABU) -->
+    <div class="kw-box-jumlah">
+      <table class="kw-grid">
         <tr>
           <td class="kw-c-label">Jumlah</td>
           <td class="kw-c-sep">:</td>
           <td class="kw-c-val kw-c-val-bold">Rp. <%= new Intl.NumberFormat('id-ID').format(data.total_dana_diterima) %>,-</td>
         </tr>
       </table>
+    </div>
 
-      <!-- 3. Untuk & Alamat -->
+    <!-- 3. KOTAK BAWAH: UNTUK, ALAMAT, CATATAN SAH & TANDA TANGAN -->
+    <div class="kw-box-bottom">
       <table class="kw-grid">
         <tr>
           <td class="kw-c-label">Untuk</td>
@@ -551,12 +559,12 @@
         </tr>
       </table>
 
-      <!-- 4. Catatan Validasi (Ada garis atas, TANPA garis bawah) -->
+      <!-- Catatan Validasi -->
       <div class="kw-note-row">
         Kwitansi ini sah apabila ada tanda tangan pengurus koperasi.
       </div>
 
-      <!-- 5. Tanggal & Tanda Tangan (Langsung di bawah catatan, masih di dalam kotak) -->
+      <!-- Tanggal & Tanda Tangan -->
       <div class="kw-signatures-area">
         <div class="kw-date-line">
           Jakarta, <%= new Date(data.tanggal_penarikan).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) %>
