@@ -9,7 +9,7 @@
   <style>
     @page {
       size: A4 portrait;
-      margin: 12mm 18mm;
+      margin: 15mm 18mm;
     }
     * {
       box-sizing: border-box;
@@ -17,8 +17,8 @@
       padding: 0;
     }
     body {
-      font-family: 'Times New Roman', Times, serif;
-      background: #f1f5f9;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f172a;
       color: #0f172a;
       padding: 24px;
       display: flex;
@@ -26,17 +26,21 @@
       align-items: center;
       line-height: 1.5;
     }
+
+    /* TOP ACTION BAR */
     .no-print-bar {
       width: 100%;
-      max-width: 820px;
+      max-width: 840px;
       margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
       font-family: 'Segoe UI', Tahoma, sans-serif;
     }
     .btn-action {
-      padding: 10px 18px;
+      padding: 9px 18px;
       border-radius: 6px;
       border: none;
       cursor: pointer;
@@ -46,20 +50,167 @@
       gap: 8px;
       text-decoration: none;
       font-size: 14px;
+      transition: all 0.2s;
     }
     .btn-primary { background: #059669; color: #fff; }
     .btn-primary:hover { background: #047857; }
-    .btn-secondary { background: #e2e8f0; color: #334155; }
-    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-secondary { background: #334155; color: #e2e8f0; }
+    .btn-secondary:hover { background: #475569; }
 
+    /* TOGGLE BUTTON GROUP */
+    .btn-group-toggle {
+      display: inline-flex;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      gap: 4px;
+    }
+    .btn-toggle {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-toggle:hover {
+      color: #f8fafc;
+      background: rgba(255,255,255,0.06);
+    }
+    .btn-toggle.active {
+      background: #059669;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+    }
+
+    /* ========================================================= */
+    /* 1. KWITANSI RESMI BKN (FORMAT PERSIS FISIK)               */
+    /* ========================================================= */
+    .kwitansi-sheet {
+      width: 100%;
+      max-width: 840px;
+      background: #ffffff;
+      color: #000000;
+      padding: 45px 52px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      border-radius: 4px;
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .kw-header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .kw-instansi {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: #000;
+      text-transform: uppercase;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .kw-line-thick {
+      height: 4px;
+      background: #000000;
+      width: 100%;
+      margin: 12px 0 16px 0;
+    }
+    .kw-title {
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-decoration: underline;
+      margin: 0;
+    }
+
+    .kw-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1.5px solid #000000;
+      font-size: 13.5px;
+    }
+    .kw-table td {
+      padding: 7px 12px;
+      vertical-align: top;
+      color: #000;
+    }
+    .kw-label {
+      width: 155px;
+      font-weight: 400;
+    }
+    .kw-sep {
+      width: 16px;
+      text-align: center;
+    }
+    .kw-val {
+      font-weight: 400;
+    }
+
+    .kw-row-jumlah td {
+      border-top: 2px solid #000000;
+      border-bottom: 2px solid #000000;
+      background: #e2e8f0;
+      font-size: 14.5px;
+      padding: 9px 12px;
+    }
+    .kw-row-note td {
+      border-top: 1px solid #000000;
+      font-size: 12px;
+      font-style: italic;
+      padding: 6px 12px;
+    }
+
+    .kw-footer {
+      margin-top: 36px;
+    }
+    .kw-date-block {
+      text-align: right;
+      padding-right: 48px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .kw-sigs-grid {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+    .kw-sig-col {
+      width: 40%;
+      text-align: center;
+    }
+    .kw-sig-role {
+      font-size: 14px;
+      margin-bottom: 75px;
+    }
+    .kw-sig-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* ========================================================= */
+    /* 2. BERITA ACARA RINCIAN DANA PENSIUN (LAMPIRAN AUDIT)     */
+    /* ========================================================= */
     .doc-container {
       width: 100%;
-      max-width: 820px;
-      background: #fff;
+      max-width: 840px;
+      background: #ffffff;
+      color: #0f172a;
       border: 3px double #065f46;
       padding: 38px 48px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
       position: relative;
+      font-family: 'Times New Roman', Times, serif;
+      margin-bottom: 24px;
     }
     .watermark {
       position: absolute;
@@ -71,7 +222,6 @@
       pointer-events: none;
     }
 
-    /* KOP SURAT */
     .kop-surat {
       display: flex;
       align-items: center;
@@ -108,7 +258,6 @@
       color: #334155;
     }
 
-    /* JUDUL SURAT */
     .doc-title {
       text-align: center;
       margin-bottom: 18px;
@@ -126,12 +275,6 @@
       margin-top: 3px;
     }
 
-    .doc-content {
-      font-size: 13.5px;
-      color: #1e293b;
-    }
-
-    /* BIODATA */
     .table-bio {
       width: 100%;
       margin: 12px 0 16px 12px;
@@ -151,7 +294,6 @@
       text-align: center;
     }
 
-    /* TABEL RINCIAN KEUANGAN */
     .table-finance {
       width: 100%;
       border-collapse: collapse;
@@ -185,7 +327,6 @@
       color: #065f46;
     }
 
-    /* TERBILANG BOX */
     .terbilang-box {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
@@ -196,7 +337,6 @@
       margin-bottom: 16px;
     }
 
-    /* TANDA TANGAN */
     .doc-signatures {
       display: flex;
       justify-content: space-between;
@@ -232,39 +372,160 @@
       font-family: 'Segoe UI', Tahoma, sans-serif;
     }
 
+    /* ========================================================= */
+    /* PRINT MEDIA QUERIES                                       */
+    /* ========================================================= */
     @media print {
       body {
-        background: #fff;
-        padding: 0;
+        background: #ffffff !important;
+        padding: 0 !important;
       }
       .no-print-bar {
         display: none !important;
       }
+      .kwitansi-sheet {
+        box-shadow: none !important;
+        padding: 20px 20px !important;
+        max-width: 100% !important;
+        border: none !important;
+      }
       .doc-container {
-        border: none;
-        box-shadow: none;
-        padding: 0;
-        max-width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 20px 20px !important;
+        max-width: 100% !important;
       }
       .watermark {
-        opacity: 0.05;
+        opacity: 0.05 !important;
+      }
+
+      /* Mode Cetak */
+      body.mode-kwitansi #sectionBeritaAcara {
+        display: none !important;
+      }
+      body.mode-kwitansi #sectionKwitansi {
+        display: block !important;
+      }
+
+      body.mode-berita-acara #sectionKwitansi {
+        display: none !important;
+      }
+      body.mode-berita-acara #sectionBeritaAcara {
+        display: block !important;
+      }
+
+      body.mode-keduanya #sectionKwitansi {
+        display: block !important;
+        page-break-after: always;
+      }
+      body.mode-keduanya #sectionBeritaAcara {
+        display: block !important;
       }
     }
   </style>
 </head>
-<body>
+<body class="mode-kwitansi">
 
-  <!-- Tombol Aksi (Tidak tercetak) -->
+  <!-- TOP BAR: MODE SWITCHER & PRINT BUTTON (TIDAK TERCETAK) -->
   <div class="no-print-bar">
-    <a href="/admin/pensiun" class="btn-action btn-secondary">
-      <i class="bi bi-arrow-left"></i> Kembali ke Menu Pensiun
-    </a>
-    <button onclick="window.print()" class="btn-action btn-primary">
-      <i class="bi bi-printer-fill"></i> Cetak / Simpan PDF
-    </button>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <a href="/admin/pensiun" class="btn-action btn-secondary">
+        <i class="bi bi-arrow-left"></i> Kembali ke Menu Pensiun
+      </a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <div class="btn-group-toggle">
+        <button type="button" id="btnModeKwitansi" class="btn-toggle active" onclick="switchMode('kwitansi')">
+          <i class="bi bi-receipt"></i> Kwitansi Resmi BKN
+        </button>
+        <button type="button" id="btnModeBeritaAcara" class="btn-toggle" onclick="switchMode('berita-acara')">
+          <i class="bi bi-file-earmark-text"></i> Berita Acara Rincian
+        </button>
+        <button type="button" id="btnModeKeduanya" class="btn-toggle" onclick="switchMode('keduanya')">
+          <i class="bi bi-collection"></i> Tampilkan Keduanya
+        </button>
+      </div>
+
+      <button onclick="window.print()" class="btn-action btn-primary">
+        <i class="bi bi-printer-fill"></i> Cetak Dokumen
+      </button>
+    </div>
   </div>
 
-  <div class="doc-container">
+  <!-- ========================================================= -->
+  <!-- 1. KWITANSI PENGEMBALIAN SIMPANAN KOPERASI (PERSIS FISIK) -->
+  <!-- ========================================================= -->
+  <div id="sectionKwitansi" class="kwitansi-sheet">
+    <div class="kw-header">
+      <h1 class="kw-instansi">KOPERASI PRIMER SIMPAN PINJAM</h1>
+      <h1 class="kw-instansi">KANTOR REGIONAL V BKN JAKARTA</h1>
+      <div class="kw-line-thick"></div>
+      <h2 class="kw-title">KWITANSI PENGEMBALIAN SIMPANAN KOPERASI</h2>
+    </div>
+
+    <table class="kw-table">
+      <tbody>
+        <tr>
+          <td class="kw-label">Sudah terima dari</td>
+          <td class="kw-sep">:</td>
+          <td class="kw-val" style="font-style: italic;">Koperasi Primer Simpan Pinjam Kanreg V BKN Jakarta</td>
+        </tr>
+        <tr>
+          <td class="kw-label">Terbilang</td>
+          <td class="kw-sep">:</td>
+          <td class="kw-val" style="font-style: italic;"><%= terbilang %></td>
+        </tr>
+        <tr class="kw-row-jumlah">
+          <td class="kw-label" style="font-weight: bold; font-style: italic;">Jumlah</td>
+          <td class="kw-sep" style="font-weight: bold;">:</td>
+          <td class="kw-val" style="font-weight: bold; font-style: italic; font-size: 15px;">
+            Rp. <%= new Intl.NumberFormat('id-ID').format(data.total_dana_diterima) %>,-
+          </td>
+        </tr>
+        <tr>
+          <td class="kw-label">Untuk</td>
+          <td class="kw-sep">:</td>
+          <td class="kw-val" style="font-style: italic;">
+            Pengembalian simpanan koperasi atas nama Bpk/Ibu <%= data.nama_anggota %>
+          </td>
+        </tr>
+        <tr>
+          <td class="kw-label">Alamat</td>
+          <td class="kw-sep">:</td>
+          <td class="kw-val" style="font-style: italic;">
+            <%= data.unit_kerja_anggota || 'Kantor Regional V BKN Jakarta' %>
+          </td>
+        </tr>
+        <tr class="kw-row-note">
+          <td colspan="3">
+            Kwitansi ini sah apabila ada tanda tangan pengurus koperasi.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="kw-footer">
+      <div class="kw-date-block">
+        Jakarta, <%= new Date(data.tanggal_penarikan).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) %>
+      </div>
+      <div class="kw-sigs-grid">
+        <div class="kw-sig-col">
+          <p class="kw-sig-role">Penerima simpanan</p>
+          <p class="kw-sig-name">( <%= data.nama_anggota %> )</p>
+        </div>
+        <div class="kw-sig-col">
+          <p class="kw-sig-role">Penerima</p>
+          <p class="kw-sig-name">( <span contenteditable="true" title="Klik untuk ubah nama jika diperlukan"><%= data.admin_nama && data.admin_nama !== 'Admin Koperasi' ? data.admin_nama : 'Nurmiati, S.AP' %></span> )</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 2. BERITA ACARA PENGEMBALIAN DANA SIMPANAN (LAMPIRAN)     -->
+  <!-- ========================================================= -->
+  <div id="sectionBeritaAcara" class="doc-container" style="display: none;">
     <img src="/images/logo-bkn.png" class="watermark" alt="Watermark BKN" />
 
     <!-- KOP RESMI -->
@@ -391,17 +652,15 @@
 
     <!-- TANDA TANGAN (3 PIHAK) -->
     <div class="doc-signatures">
-      <!-- 1. Anggota Pensiun -->
       <div class="sig-block">
         <div class="sig-role">
           Penerima Dana Simpanan,<br>
-          Pegawai ASN Yang Bersangkutan
+          Pegawai ASN Bersangkutan
         </div>
         <div class="sig-name"><%= data.nama_anggota %></div>
         <div class="sig-nip">NIP. <%= data.nip_anggota %></div>
       </div>
 
-      <!-- 2. Bendahara -->
       <div class="sig-block">
         <div class="sig-role">
           Pengurus Koperasi,<br>
@@ -411,7 +670,6 @@
         <div class="sig-nip">Pengurus Koperasi BKN Kanreg V</div>
       </div>
 
-      <!-- 3. Ketua Koperasi -->
       <div class="sig-block">
         <div class="sig-role">
           Mengetahui / Menyetujui,<br>
@@ -429,6 +687,33 @@
     </div>
   </div>
 
+  <script>
+    function switchMode(mode) {
+      const secKwitansi = document.getElementById('sectionKwitansi');
+      const secBeritaAcara = document.getElementById('sectionBeritaAcara');
+      const btnKw = document.getElementById('btnModeKwitansi');
+      const btnBa = document.getElementById('btnModeBeritaAcara');
+      const btnAll = document.getElementById('btnModeKeduanya');
+
+      btnKw.classList.remove('active');
+      btnBa.classList.remove('active');
+      btnAll.classList.remove('active');
+      document.body.className = 'mode-' + mode;
+
+      if (mode === 'kwitansi') {
+        btnKw.classList.add('active');
+        secKwitansi.style.display = 'block';
+        secBeritaAcara.style.display = 'none';
+      } else if (mode === 'berita-acara') {
+        btnBa.classList.add('active');
+        secKwitansi.style.display = 'none';
+        secBeritaAcara.style.display = 'block';
+      } else if (mode === 'keduanya') {
+        btnAll.classList.add('active');
+        secKwitansi.style.display = 'block';
+        secBeritaAcara.style.display = 'block';
+      }
+    }
+  </script>
 </body>
 </html>
-
