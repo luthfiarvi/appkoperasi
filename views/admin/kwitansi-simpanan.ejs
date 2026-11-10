@@ -251,9 +251,9 @@
 <body>
 
   <div class="no-print-bar">
-    <button onclick="window.history.back()" class="btn-action btn-secondary">
+    <a href="<%= (typeof user !== 'undefined' && user && user.role === 'user') ? '/simpanan-saya' : '/admin/simpanan' %>" onclick="handleKembali(event, '<%= (typeof user !== 'undefined' && user && user.role === 'user') ? '/simpanan-saya' : '/admin/simpanan' %>')" class="btn-action btn-secondary" style="text-decoration: none;">
       <i class="bi bi-arrow-left"></i> Kembali
-    </button>
+    </a>
     <div style="display:flex;gap:8px;">
       <button onclick="window.print()" class="btn-action btn-primary">
         <i class="bi bi-printer"></i> Cetak Kwitansi
@@ -344,5 +344,19 @@
 
   </div>
 
+  <script>
+    function handleKembali(e, fallbackUrl) {
+      if (window.opener && window.history.length <= 1) {
+        window.close();
+        setTimeout(function() { window.location.href = fallbackUrl; }, 150);
+        return;
+      }
+      if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+        e.preventDefault();
+        window.history.back();
+        return;
+      }
+    }
+  </script>
 </body>
 </html>

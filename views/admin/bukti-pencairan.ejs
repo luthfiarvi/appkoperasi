@@ -176,9 +176,9 @@
 <body>
 
   <div class="no-print-bar">
-    <button onclick="window.history.back()" class="btn-action btn-secondary">
+    <a href="<%= (typeof user !== 'undefined' && user && user.role === 'user') ? '/dashboard' : '/admin/pinjaman' %>" onclick="handleKembali(event, '<%= (typeof user !== 'undefined' && user && user.role === 'user') ? '/dashboard' : '/admin/pinjaman' %>')" class="btn-action btn-secondary" style="text-decoration: none;">
       <i class="bi bi-arrow-left"></i> Kembali
-    </button>
+    </a>
     <button onclick="window.print()" class="btn-action btn-primary">
       <i class="bi bi-printer"></i> Cetak Bukti Pencairan
     </button>
@@ -296,5 +296,19 @@
 
   </div>
 
+  <script>
+    function handleKembali(e, fallbackUrl) {
+      if (window.opener && window.history.length <= 1) {
+        window.close();
+        setTimeout(function() { window.location.href = fallbackUrl; }, 150);
+        return;
+      }
+      if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+        e.preventDefault();
+        window.history.back();
+        return;
+      }
+    }
+  </script>
 </body>
 </html>
