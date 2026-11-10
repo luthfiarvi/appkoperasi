@@ -168,7 +168,6 @@
     .kw-jumlah-tr td {
       border-bottom: 1px solid #000000 !important;
       padding: 5px 10px;
-      font-weight: bold;
     }
 
     .kw-grid {
@@ -198,6 +197,7 @@
     }
     .kw-c-val-bold {
       font-weight: bold;
+      font-style: italic;
     }
 
     /* CATATAN SAH */
@@ -212,14 +212,7 @@
 
     /* AREA TANDA TANGAN (MASIH DI DALAM KOTAK) */
     .kw-signatures-area {
-      padding: 24px 20px 32px 20px;
-    }
-    .kw-date-line {
-      text-align: right;
-      padding-right: 50px;
-      font-size: 13.5px;
-      color: #000000;
-      margin-bottom: 14px;
+      padding: 20px 20px 30px 20px;
     }
     .kw-sig-row {
       display: flex;
@@ -229,6 +222,15 @@
     .kw-sig-col {
       width: 42%;
       text-align: center;
+    }
+    .kw-date-line {
+      font-size: 13.5px;
+      color: #000000;
+      margin-bottom: 8px;
+    }
+    .kw-sig-spacer-date {
+      height: 20px;
+      margin-bottom: 8px;
     }
     .kw-sig-role-text {
       font-size: 13.5px;
@@ -548,7 +550,7 @@
         <tr>
           <td class="kw-c-label">Untuk</td>
           <td class="kw-c-sep">:</td>
-          <td class="kw-c-val">Pengembalian simpanan koperasi atas nama Bpk. <%= data.nama_anggota.replace(/^(Bpk\.|Ibu\.|Bapak\.)\s*/i, '') %></td>
+          <td class="kw-c-val">Pengembalian simpanan koperasi atas nama <%= data.nama_anggota.startsWith('Bpk.') || data.nama_anggota.startsWith('Ibu.') ? data.nama_anggota : 'Bpk./Ibu ' + data.nama_anggota %></td>
         </tr>
         <tr>
           <td class="kw-c-label">Alamat</td>
@@ -564,16 +566,16 @@
 
       <!-- Tanggal & Tanda Tangan -->
       <div class="kw-signatures-area">
-        <div class="kw-date-line">
-          Jakarta, <%= new Date(data.tanggal_penarikan).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) %>
-        </div>
-
         <div class="kw-sig-row">
           <div class="kw-sig-col">
+            <div class="kw-sig-spacer-date"></div>
             <div class="kw-sig-role-text">Penerima simpanan</div>
             <div class="kw-sig-person-name">( <%= data.nama_anggota %> )</div>
           </div>
           <div class="kw-sig-col">
+            <div class="kw-date-line">
+              Jakarta, <%= new Date(data.tanggal_penarikan).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) %>
+            </div>
             <div class="kw-sig-role-text">Penerima</div>
             <div class="kw-sig-person-name">( Nurmiati, S.AP )</div>
           </div>
