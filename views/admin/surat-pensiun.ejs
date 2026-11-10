@@ -162,11 +162,11 @@
       box-sizing: border-box;
     }
 
-    .kw-jumlah-row {
+    .kw-jumlah-tr {
       background: #dedede;
-      border-bottom: 1px solid #000000;
     }
-    .kw-jumlah-row td {
+    .kw-jumlah-tr td {
+      border-bottom: 1px solid #000000 !important;
       padding: 5px 10px;
       font-weight: bold;
     }
@@ -534,19 +534,17 @@
       </table>
     </div>
 
-    <!-- 2. KOTAK BAWAH: JUMLAH MENYATU LANGSUNG DENGAN UNTUK, ALAMAT, CATATAN & TANDA TANGAN -->
+    <!-- 2. KOTAK BAWAH: JUMLAH, UNTUK, ALAMAT, CATATAN & TANDA TANGAN -->
     <div class="kw-box-bottom">
-      <!-- Baris Jumlah (Latar Abu-abu, Garis Bawah Menyatu ke Untuk) -->
-      <table class="kw-grid kw-jumlah-row">
-        <tr>
+      <table class="kw-grid">
+        <!-- Baris Jumlah (Latar Abu-abu dengan Garis Bawah Hitam Tegas) -->
+        <tr class="kw-jumlah-tr">
           <td class="kw-c-label">Jumlah</td>
           <td class="kw-c-sep">:</td>
           <td class="kw-c-val kw-c-val-bold">Rp. <%= new Intl.NumberFormat('id-ID').format(data.total_dana_diterima) %>,-</td>
         </tr>
-      </table>
 
-      <!-- Baris Untuk & Alamat -->
-      <table class="kw-grid">
+        <!-- Baris Untuk & Alamat -->
         <tr>
           <td class="kw-c-label">Untuk</td>
           <td class="kw-c-sep">:</td>
