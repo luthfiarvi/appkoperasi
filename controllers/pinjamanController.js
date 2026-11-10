@@ -562,6 +562,46 @@ const PinjamanController = {
     }
   },
 
+  // ─── Cetak Formulir Permohonan Pinjaman (Sesuai form-pinjaman.png) ─
+  cetakFormulirPinjaman: async (req, res) => {
+    try {
+      const pinjamanId = parseInt(req.params.id);
+      const pinjaman = await PinjamanModel.findById(pinjamanId);
+      if (!pinjaman) return res.status(404).send('Pinjaman tidak ditemukan');
+
+      // Security: jika user biasa, pastikan hanya bisa mencetak miliknya sendiri
+      if (req.session.user?.role === 'user' && pinjaman.user_id !== req.session.user.id) {
+        return res.status(403).send('Akses ditolak.');
+      }
+
+      const terbilang = terbilangRupiah(pinjaman.nominal_pengajuan);
+
+      // Hitung rentang perkiraan bulan angsuran (Mulai s/d Selesai)
+      const tglAcuan = pinjaman.tanggal_persetujuan ? new Date(pinjaman.tanggal_persetujuan) : new Date(pinjaman.created_at);
+      const tglMulai = new Date(tglAcuan);
+      tglMulai.setMonth(tglMulai.getMonth() + 1);
+      const bulanArr = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      const mulaiBulan = `${bulanArr[tglMulai.getMonth()]} ${tglMulai.getFullYear()}`;
+
+      const tglSelesai = new Date(tglMulai);
+      tglSelesai.setMonth(tglSelesai.getMonth() + (parseInt(pinjaman.tenor_bulan) - 1));
+      const selesaiBulan = `${bulanArr[tglSelesai.getMonth()]} ${tglSelesai.getFullYear()}`;
+
+      res.render('admin/form-pinjaman-cetak', {
+        title: `Formulir Permohonan Pinjaman #${pinjaman.id} — ${pinjaman.nama}`,
+        pinjaman,
+        terbilang,
+        mulaiBulan,
+        selesaiBulan,
+        formatRp,
+        tanggalCetak: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+      });
+    } catch (err) {
+      console.error('Error cetakFormulirPinjaman:', err);
+      res.status(500).send('Gagal memuat Formulir Permohonan Pinjaman: ' + err.message);
+    }
+  },
+
   // ─── Cetak Surat Keterangan Lunas (SKL) ───────────────────────────
   cetakSuratLunas: async (req, res) => {
     try {

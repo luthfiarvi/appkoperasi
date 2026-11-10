@@ -40,7 +40,8 @@ router.get('/admin/pinjaman/baru',      isAuthenticated, isAdmin, PinjamanContro
 router.post('/admin/pinjaman/buat',     isAuthenticated, isAdmin, PinjamanController.adminDirectCreatePinjaman);
 router.post('/admin/pinjaman/hapus/:id',isAuthenticated, isAdmin, PinjamanController.adminDeletePinjaman);
 
-// Admin: Cetak Bukti Pencairan & Surat Keterangan Lunas (SKL)
+// Admin: Cetak Formulir Permohonan, Bukti Pencairan & Surat Keterangan Lunas (SKL)
+router.get('/admin/pinjaman/:id/formulir',     isAuthenticated, isAdmin, PinjamanController.cetakFormulirPinjaman);
 router.get('/admin/pinjaman/:id/bukti-cair',   isAuthenticated, isAdmin, PinjamanController.cetakBuktiPencairan);
 router.get('/admin/pinjaman/:id/surat-lunas',  isAuthenticated, isAdmin, PinjamanController.cetakSuratLunas);
 router.post('/admin/pinjaman/:id/pelunasan-cepat', isAuthenticated, isAdmin, PinjamanController.pelunasanCepat);

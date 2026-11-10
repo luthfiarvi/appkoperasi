@@ -20,6 +20,10 @@
     <p>Diajukan oleh <strong><%= pinjaman.nama %></strong> pada <%= new Date(pinjaman.created_at).toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) %></p>
   </div>
   <div class="d-flex gap-2 flex-wrap">
+    <a href="/admin/pinjaman/<%= pinjaman.id %>/formulir" target="_blank" class="btn-primary" style="background: #2563eb;">
+      <i class="bi bi-file-earmark-text"></i> Cetak Formulir Pinjaman
+    </a>
+
     <% if (pinjaman.status === 'APPROVED' || pinjaman.status === 'LUNAS') { %>
       <a href="/admin/pinjaman/<%= pinjaman.id %>/bukti-cair" target="_blank" class="btn-secondary">
         <i class="bi bi-printer"></i> Bukti Pencairan

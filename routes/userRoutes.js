@@ -20,7 +20,8 @@ router.post('/simulasi', isAuthenticated, isUser, PinjamanController.postSimulas
 router.get('/pengajuan',  isAuthenticated, isUser, PinjamanController.showFormPengajuan);
 router.post('/pengajuan', isAuthenticated, isUser, PinjamanController.submitPengajuan);
 
-// Dokumen Digital User: Bukti Pencairan & Surat Lunas (SKL) & Bukti Pensiun
+// Dokumen Digital User: Formulir Permohonan, Bukti Pencairan & Surat Lunas (SKL) & Bukti Pensiun
+router.get('/pinjaman/:id/formulir',    isAuthenticated, isUser, PinjamanController.cetakFormulirPinjaman);
 router.get('/pinjaman/:id/bukti-cair',  isAuthenticated, isUser, PinjamanController.cetakBuktiPencairan);
 router.get('/pinjaman/:id/surat-lunas', isAuthenticated, isUser, PinjamanController.cetakSuratLunas);
 router.get('/pensiun/bukti/:id',        isAuthenticated, isUser, PensiunController.cetakBuktiPensiun);

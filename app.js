@@ -79,6 +79,7 @@ app.use((req, res, next) => {
       'admin/bukti-pencairan',
       'admin/surat-lunas',
       'admin/surat-pensiun',
+      'admin/form-pinjaman-cetak',
       'errors/403', 
       'errors/500'
     ];

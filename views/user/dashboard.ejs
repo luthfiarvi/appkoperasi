@@ -152,6 +152,9 @@
                 <td><small><%= p.catatan_admin || '-' %></small></td>
                 <td class="text-center">
                   <div class="d-flex justify-center gap-1">
+                    <a href="/pinjaman/<%= p.id %>/formulir" target="_blank" class="btn-sm btn-outline-info" title="Cetak Formulir Permohonan Pinjaman Fisik">
+                      <i class="bi bi-file-earmark-text"></i> Form
+                    </a>
                     <% if (p.status === 'APPROVED' || p.status === 'LUNAS') { %>
                       <a href="/pinjaman/<%= p.id %>/bukti-cair" target="_blank" class="btn-sm btn-outline-primary" title="Cetak Bukti Pencairan">
                         <i class="bi bi-printer"></i>
