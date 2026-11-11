@@ -64,10 +64,20 @@ function initInputRupiah() {
       }
     }
 
-    function updateFormatting() {
+    function updateFormatting(isInitial = false) {
       const start = input.selectionStart;
       const oldLen = input.value.length;
-      const raw = input.value.replace(/[^0-9]/g, '');
+      let val = input.value;
+
+      // Jika saat load awal nilai mengandung pecahan desimal JavaScript (misal 1532222.222)
+      if (isInitial && val && typeof val === 'string' && val.includes('.') && !val.includes(',')) {
+        const floatVal = parseFloat(val);
+        if (!isNaN(floatVal)) {
+          val = String(Math.round(floatVal));
+        }
+      }
+
+      const raw = val.replace(/[^0-9]/g, '');
 
       if (raw) {
         const formatted = formatRibuan(raw);
@@ -93,7 +103,7 @@ function initInputRupiah() {
 
     // Format nilai awal saat load
     if (input.value) {
-      updateFormatting();
+      updateFormatting(true);
     }
 
     // Pasang listener input

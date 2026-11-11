@@ -43,7 +43,7 @@
         <label class="form-label">Total SHU Dibagikan (Rp)</label>
         <div class="input-wrapper">
           <i class="bi bi-cash-stack input-icon"></i>
-          <input type="text" inputmode="numeric" name="total_shu" class="form-control input-rupiah" value="<%= totalSHUDibagikan %>" placeholder="Contoh: 45.000.000" />
+          <input type="text" inputmode="numeric" name="total_shu" class="form-control input-rupiah" value="<%= Math.round(totalSHUDibagikan) %>" placeholder="Contoh: 45.000.000" />
         </div>
       </div>
 

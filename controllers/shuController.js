@@ -42,7 +42,7 @@ module.exports = {
 
       // Input custom SHU yang dibagikan jika dikirim dari form/query
       const rawShu = req.query.total_shu ? String(req.query.total_shu).replace(/[^0-9]/g, '') : null;
-      const totalSHUDibagikan = rawShu ? parseFloat(rawShu) : (pendapatanKotor * 0.70); // 70% dibagikan ke anggota
+      const totalSHUDibagikan = rawShu ? Math.round(parseFloat(rawShu)) : Math.round(pendapatanKotor * 0.70); // 70% dibagikan ke anggota
 
       // Persentase alokasi
       const pctJasaModal   = req.query.pct_modal ? parseFloat(req.query.pct_modal) : 40; // 40%
@@ -50,10 +50,10 @@ module.exports = {
       const pctCadangan    = 20; // 20%
       const pctPengurus    = 10; // 10%
 
-      const nominalJasaModal  = (pctJasaModal / 100) * totalSHUDibagikan;
-      const nominalJasaPinjam = (pctJasaPinjam / 100) * totalSHUDibagikan;
-      const nominalCadangan   = (pctCadangan / 100) * totalSHUDibagikan;
-      const nominalPengurus   = (pctPengurus / 100) * totalSHUDibagikan;
+      const nominalJasaModal  = Math.round((pctJasaModal / 100) * totalSHUDibagikan);
+      const nominalJasaPinjam = Math.round((pctJasaPinjam / 100) * totalSHUDibagikan);
+      const nominalCadangan   = Math.round((pctCadangan / 100) * totalSHUDibagikan);
+      const nominalPengurus   = Math.round((pctPengurus / 100) * totalSHUDibagikan);
 
       // 2. Ambil data simpanan per anggota
       const { rows: simpananAnggota } = await pool.query(`
