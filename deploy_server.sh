@@ -99,6 +99,12 @@ else
     pm2 startup || true
 fi
 
+# 5. Buka Firewall Port 3001 jika UFW aktif di server
+echo ""
+echo "-> Memastikan port 3001 diizinkan di firewall server (UFW)..."
+(echo "K@nreg5" | sudo -S ufw allow 3001/tcp 2>/dev/null) || (sudo ufw allow 3001/tcp 2>/dev/null) || true
+(echo "K@nreg5" | sudo -S ufw reload 2>/dev/null) || (sudo ufw reload 2>/dev/null) || true
+
 echo ""
 echo "============================================================"
 echo "  [SERVER] STATUS PROSES DI SERVER:"
@@ -109,3 +115,4 @@ echo ""
 echo "============================================================"
 echo "  DEPLOY SUKSES! APLIKASI KOPERASI AKTIF DI PORT 3001"
 echo "============================================================"
+
