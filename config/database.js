@@ -1,15 +1,17 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
+const isWindows = process.platform === 'win32';
+
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || (isWindows ? 'localhost' : '/var/run/postgresql'),
   port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'koperasi_bkn',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
+  user: process.env.DB_USER || (isWindows ? 'postgres' : (process.env.PGUSER || 'magangit')),
+  password: process.env.DB_PASSWORD || (isWindows ? 'postgres' : (process.env.PGPASSWORD || 'K@nreg5')),
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
 });
 
 pool.on('connect', () => {
