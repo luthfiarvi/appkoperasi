@@ -35,50 +35,39 @@ PORT=3001
 SESSION_SECRET=koperasi-bkn-kanreg5-jakarta-secret-2026
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=koperasi_bkn
+DB_NAME=koperasi
 DB_USER=magangit
 DB_PASSWORD=K@nreg5
 EOT
-    echo "  [OK] File .env baru berhasil dibuat untuk port 3001!"
+    echo "  [OK] File .env baru berhasil dibuat untuk database 'koperasi' di port 3001!"
 else
-    # Pastikan PORT adalah 3001 agar tidak bentrok dengan meetingapp
+    # Pastikan konfigurasi database dan port sesuai dengan arahan mentor
     sed -i 's/^PORT=.*/PORT=3001/' .env
-    echo "  [OK] File .env sudah ada (memakai PORT 3001)."
+    sed -i 's/^DB_NAME=.*/DB_NAME=koperasi/' .env
+    sed -i 's/^DB_USER=.*/DB_USER=magangit/' .env
+    sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=K@nreg5/' .env
+    echo "  [OK] File .env sudah disesuaikan (DB_NAME=koperasi, PORT=3001)."
 fi
 
-# 2. Memelihara Database PostgreSQL koperasi_bkn
+# 2. Inisialisasi Database PostgreSQL 'koperasi'
 echo ""
-echo "[2/4] Memeriksa & menginisialisasi database PostgreSQL (koperasi_bkn)..."
+echo "[2/4] Memeriksa & menginisialisasi database PostgreSQL (koperasi)..."
 
-export PGPASSWORD=postgres
-DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname = 'koperasi_bkn'" 2>/dev/null || psql -h localhost -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname = 'koperasi_bkn'" 2>/dev/null || echo "0")
+export PGPASSWORD=K@nreg5
+TABLE_COUNT=$(psql -h localhost -U magangit -d koperasi -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public'" 2>/dev/null || echo "0")
 
-if [ "$DB_EXISTS" != "1" ]; then
-    echo "  -> Database koperasi_bkn belum ada, membuat database baru di PostgreSQL..."
-    (psql -h localhost -U postgres -c "CREATE DATABASE koperasi_bkn;" 2>/dev/null) || (sudo -u postgres psql -c "CREATE DATABASE koperasi_bkn;" 2>/dev/null) || true
-    (psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE koperasi_bkn TO magangit;" 2>/dev/null) || (sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE koperasi_bkn TO magangit;" 2>/dev/null) || true
-    
+if [ "$TABLE_COUNT" -lt "3" ]; then
+    echo "  -> Database 'koperasi' masih kosong, mengimpor struktur & data dari backup_local.sql..."
     if [ -f backup_local.sql ]; then
-        echo "  -> Menginisialisasi struktur & data awal dari backup_local.sql..."
-        (psql -h localhost -U postgres -d koperasi_bkn -f backup_local.sql 2>/dev/null) || (sudo -u postgres psql -d koperasi_bkn -f backup_local.sql 2>/dev/null) || true
-        echo "  [OK] Data awal koperasi berhasil diimpor!"
+        psql -h localhost -U magangit -d koperasi -f backup_local.sql 2>/dev/null || true
+        echo "  [OK] Data awal koperasi berhasil diimpor ke database 'koperasi'!"
     elif [ -f database/schema.sql ]; then
-        echo "  -> Menginisialisasi tabel dari database/schema.sql..."
-        (psql -h localhost -U postgres -d koperasi_bkn -f database/schema.sql 2>/dev/null) || (sudo -u postgres psql -d koperasi_bkn -f database/schema.sql 2>/dev/null) || true
+        psql -h localhost -U magangit -d koperasi -f database/schema.sql 2>/dev/null || true
+        echo "  [OK] Struktur schema.sql berhasil diimpor!"
     fi
 else
-    echo "  [OK] Database koperasi_bkn sudah ada di server. Data server tetap aman & dipertahankan!"
+    echo "  [OK] Database 'koperasi' sudah berisi data ($TABLE_COUNT tabel). Data server tetap dipertahankan!"
 fi
-
-# Berikan hak akses penuh ke user magangit untuk seluruh tabel & sequence di koperasi_bkn
-SQL_PERMS="
-    GRANT ALL ON ALL TABLES IN SCHEMA public TO magangit;
-    GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO magangit;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO magangit;
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO magangit;
-"
-(psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE koperasi_bkn TO magangit;" 2>/dev/null) || (sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE koperasi_bkn TO magangit;" 2>/dev/null) || true
-(psql -h localhost -U postgres -d koperasi_bkn -c "$SQL_PERMS" 2>/dev/null) || (sudo -u postgres psql -d koperasi_bkn -c "$SQL_PERMS" 2>/dev/null) || true
 
 # 3. Dependencies
 echo ""
